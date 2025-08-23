@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run type checking
+npm run type-check
+
+# Run linting and auto-fix issues
+npm run lint:fix
+
+# Run prettier formatting
+npm run format
+
+# Stage the formatted files
+git add .
