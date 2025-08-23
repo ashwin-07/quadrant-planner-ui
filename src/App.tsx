@@ -1,182 +1,143 @@
 import {
-  MantineProvider,
+  Box,
+  Center,
   ColorSchemeScript,
-  AppShell,
-  Title,
-  Text,
-  Container,
-  Grid,
-  Card,
-  Badge,
-  Group,
+  Loader,
+  MantineProvider,
+  rem,
   Stack,
-  Paper,
+  Text,
+  Title,
 } from '@mantine/core';
-import { Notifications } from '@mantine/notifications';
 import { ModalsProvider } from '@mantine/modals';
+import { Notifications } from '@mantine/notifications';
+import { useState } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { AppLayout } from './components/layout/AppLayout';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Board } from './pages/Board';
+import { Goals } from './pages/Goals';
+import { Insights } from './pages/Insights';
 import { theme } from './theme';
-import { QUADRANT_CONFIG, GOAL_CATEGORIES } from '@/utils/constants';
 
-// Theme demonstration component
-function ThemeDemo() {
-  return (
-    <Container size="lg" py="xl">
-      <Stack gap="xl">
-        {/* Header */}
-        <div>
-          <Title order={1} ta="center" mb="md">
-            🎯 Quadrant Planner
-          </Title>
-          <Text
-            ta="center"
-            size="lg"
-            style={{ color: 'var(--mantine-color-gray-6)' }}
-          >
-            Philosophy-driven productivity with Stephen Covey's Time Management
-            Matrix
-          </Text>
-        </div>
+function AppContent() {
+  const { user, loading, logout } = useAuth();
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
-        {/* Quadrant Colors Demo */}
-        <div>
-          <Title order={2} mb="md">
-            Quadrant Color System
-          </Title>
-          <Grid>
-            {Object.entries(QUADRANT_CONFIG).map(([key, config]) => (
-              <Grid.Col key={key} span={6}>
-                <Paper
-                  p="md"
-                  style={{
-                    backgroundColor: `var(--mantine-color-${config.color === 'gray' ? 'gray-quadrant' : config.color + '-quadrant'}-0)`,
-                    borderLeft: `4px solid var(--mantine-color-${config.color === 'gray' ? 'gray-quadrant' : config.color + '-quadrant'}-5)`,
-                  }}
-                >
-                  <Group gap="xs" mb="xs">
-                    <Text size="lg">{config.emoji}</Text>
-                    <Title
-                      order={4}
-                      style={{
-                        color: `var(--mantine-color-${config.color === 'gray' ? 'gray-quadrant' : config.color + '-quadrant'}-7)`,
-                      }}
-                    >
-                      {key}: {config.title}
-                    </Title>
-                  </Group>
-                  <Text
-                    size="sm"
-                    style={{ color: 'var(--mantine-color-gray-6)' }}
-                    mb="xs"
-                  >
-                    {config.subtitle}
-                  </Text>
-                  <Text
-                    size="xs"
-                    style={{ color: 'var(--mantine-color-gray-7)' }}
-                  >
-                    {config.description}
-                  </Text>
-                </Paper>
-              </Grid.Col>
-            ))}
-          </Grid>
-        </div>
+  const handleThemeToggle = () => {
+    setIsDarkMode(prev => !prev);
+  };
 
-        {/* Staging Zone Demo */}
-        <div>
-          <Title order={2} mb="md">
-            Staging Zone
-          </Title>
-          <Paper
-            p="md"
+  if (loading) {
+    return (
+      <Center h="100vh" w="100vw">
+        <Stack align="center" gap="lg" ta="center">
+          {/* Logo */}
+          <Box
             style={{
-              border: '2px dashed var(--mantine-color-staging-blue-3)',
-              backgroundColor: 'var(--mantine-color-staging-blue-0)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: rem(64),
+              height: rem(64),
+              borderRadius: rem(16),
+              background:
+                'linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-green-6))',
+              marginBottom: rem(8),
             }}
           >
-            <Group gap="xs" mb="xs">
-              <Text size="lg">📦</Text>
-              <Title
-                order={4}
-                style={{ color: 'var(--mantine-color-staging-blue-7)' }}
-              >
-                Staging Zone
-              </Title>
-              <Badge
-                style={{
-                  backgroundColor: 'var(--mantine-color-staging-blue-1)',
-                  color: 'var(--mantine-color-staging-blue-7)',
-                }}
-              >
-                0/5
-              </Badge>
-            </Group>
-            <Text size="sm" style={{ color: 'var(--mantine-color-gray-6)' }}>
-              Stage quick thoughts here, then organize into quadrants
+            <Text
+              size="xl"
+              fw={700}
+              style={{ color: 'white', fontSize: rem(28) }}
+            >
+              ※
             </Text>
-          </Paper>
-        </div>
+          </Box>
 
-        {/* Goal Categories Demo */}
-        <div>
-          <Title order={2} mb="md">
-            Goal Categories
+          <Title
+            order={1}
+            ta="center"
+            fw={700}
+            style={{ color: 'var(--mantine-color-gray-8)' }}
+          >
+            Quadrant Planner
           </Title>
-          <Grid>
-            {Object.entries(GOAL_CATEGORIES).map(([key, category]) => (
-              <Grid.Col key={key} span={4}>
-                <Card
-                  style={{
-                    borderLeft: `4px solid var(--mantine-color-${category.color === 'blue' ? 'career-blue' : category.color === 'green' ? 'health-green' : category.color === 'pink' ? 'relationships-pink' : category.color === 'violet' ? 'learning-violet' : category.color === 'yellow' ? 'financial-amber' : 'personal-orange'}-5)`,
-                  }}
-                >
-                  <Group gap="xs">
-                    <Text size="lg">{category.emoji}</Text>
-                    <div>
-                      <Text fw={500}>{category.label}</Text>
-                      <Badge
-                        style={{
-                          backgroundColor: `var(--mantine-color-${category.color === 'blue' ? 'career-blue' : category.color === 'green' ? 'health-green' : category.color === 'pink' ? 'relationships-pink' : category.color === 'violet' ? 'learning-violet' : category.color === 'yellow' ? 'financial-amber' : 'personal-orange'}-1)`,
-                          color: `var(--mantine-color-${category.color === 'blue' ? 'career-blue' : category.color === 'green' ? 'health-green' : category.color === 'pink' ? 'relationships-pink' : category.color === 'violet' ? 'learning-violet' : category.color === 'yellow' ? 'financial-amber' : 'personal-orange'}-7)`,
-                        }}
-                        size="xs"
-                      >
-                        {key}
-                      </Badge>
-                    </div>
-                  </Group>
-                </Card>
-              </Grid.Col>
-            ))}
-          </Grid>
-        </div>
+          <Text size="md" style={{ color: 'var(--mantine-color-gray-6)' }}>
+            Loading your productivity workspace...
+          </Text>
+          <Loader size="md" style={{ marginTop: rem(16) }} />
+        </Stack>
+      </Center>
+    );
+  }
 
-        {/* Success Message */}
-        <Card
-          style={{
-            backgroundColor: 'var(--mantine-color-green-quadrant-0)',
-            borderColor: 'var(--mantine-color-green-quadrant-3)',
-            border: '1px solid var(--mantine-color-green-quadrant-3)',
-          }}
-        >
-          <Group gap="xs">
-            <Text size="lg">✅</Text>
-            <div>
-              <Text
-                fw={500}
-                style={{ color: 'var(--mantine-color-green-quadrant-7)' }}
-              >
-                Theme Setup Complete!
-              </Text>
-              <Text size="sm" style={{ color: 'var(--mantine-color-gray-6)' }}>
-                All quadrant colors, goal categories, and component styling are
-                configured and working perfectly.
-              </Text>
-            </div>
-          </Group>
-        </Card>
-      </Stack>
-    </Container>
+  if (!user) {
+    // For now, automatically redirect since we're using mock auth
+    // In a real app, this would show a login page
+    return (
+      <Center h="100vh" w="100vw">
+        <Stack align="center" gap="lg" ta="center">
+          {/* Logo */}
+          <Box
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: rem(64),
+              height: rem(64),
+              borderRadius: rem(16),
+              background:
+                'linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-green-6))',
+              marginBottom: rem(8),
+            }}
+          >
+            <Text
+              size="xl"
+              fw={700}
+              style={{ color: 'white', fontSize: rem(28) }}
+            >
+              ※
+            </Text>
+          </Box>
+
+          <Title
+            order={1}
+            ta="center"
+            fw={700}
+            style={{ color: 'var(--mantine-color-gray-8)' }}
+          >
+            Quadrant Planner
+          </Title>
+          <Text size="md" style={{ color: 'var(--mantine-color-gray-6)' }}>
+            Redirecting to dashboard...
+          </Text>
+          <Loader size="md" style={{ marginTop: rem(16) }} />
+        </Stack>
+      </Center>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <AppLayout
+            user={user}
+            onLogout={logout}
+            onThemeToggle={handleThemeToggle}
+            isDarkMode={isDarkMode}
+          />
+        }
+      >
+        <Route index element={<Navigate to="/goals" replace />} />
+        <Route path="goals" element={<Goals />} />
+        <Route path="board" element={<Board />} />
+        <Route path="insights" element={<Insights />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 
@@ -187,11 +148,11 @@ function App() {
       <MantineProvider theme={theme} defaultColorScheme="light">
         <Notifications />
         <ModalsProvider>
-          <AppShell padding="md">
-            <AppShell.Main>
-              <ThemeDemo />
-            </AppShell.Main>
-          </AppShell>
+          <BrowserRouter>
+            <AuthProvider>
+              <AppContent />
+            </AuthProvider>
+          </BrowserRouter>
         </ModalsProvider>
       </MantineProvider>
     </>

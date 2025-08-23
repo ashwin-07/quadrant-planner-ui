@@ -1,7 +1,6 @@
 import {
   createTheme,
   type MantineColorsTuple,
-  virtualColor,
   parseThemeColor,
   rem,
 } from '@mantine/core';
@@ -167,33 +166,6 @@ export const theme = createTheme({
     'learning-violet': learningViolet,
     'financial-amber': financialAmber,
     'personal-orange': personalOrange,
-
-    // Virtual colors for semantic meaning
-    quadrant1: virtualColor({
-      name: 'quadrant1',
-      dark: 'red-quadrant',
-      light: 'red-quadrant',
-    }),
-    quadrant2: virtualColor({
-      name: 'quadrant2',
-      dark: 'green-quadrant',
-      light: 'green-quadrant',
-    }),
-    quadrant3: virtualColor({
-      name: 'quadrant3',
-      dark: 'yellow-quadrant',
-      light: 'yellow-quadrant',
-    }),
-    quadrant4: virtualColor({
-      name: 'quadrant4',
-      dark: 'gray-quadrant',
-      light: 'gray-quadrant',
-    }),
-    staging: virtualColor({
-      name: 'staging',
-      dark: 'staging-blue',
-      light: 'staging-blue',
-    }),
   },
 
   primaryColor: 'blue',
@@ -452,7 +424,8 @@ export function getGoalCategoryColor(
 // Color resolver for dynamic theming
 export function resolveQuadrantColor(
   color: string,
-  theme: Record<string, unknown>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  theme: any
 ) {
   const parsed = parseThemeColor({ color, theme });
   return parsed.value;
