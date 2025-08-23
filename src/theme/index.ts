@@ -450,7 +450,10 @@ export function getGoalCategoryColor(
 }
 
 // Color resolver for dynamic theming
-export function resolveQuadrantColor(color: string, theme: unknown) {
+export function resolveQuadrantColor(
+  color: string,
+  theme: Record<string, unknown>
+) {
   const parsed = parseThemeColor({ color, theme });
   return parsed.value;
 }
