@@ -20,7 +20,7 @@ export {
   getGoalCategoryColor,
   getQuadrantColor,
   resolveQuadrantColor,
-} from '../theme';
+} from '../theme/index';
 
 // Additional utility functions
 export function generateId(): string {

@@ -1,0 +1,2909 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Quadrant Planner API",
+    "description": "Backend API for Quadrant Planner - A philosophy-driven productivity application implementing Stephen Covey's Time Management Matrix",
+    "version": "1.0.0",
+    "x-examples": {
+      "jwt_token_example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhdWQiOiJ5b3VyLWNsaWVudC1pZCIsInN1YiI6InRlc3QtdXNlci0xMjMiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJuYW1lIjoiVGVzdCBVc2VyIiwicGljdHVyZSI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYXZhdGFyLmpwZyIsImlhdCI6MTc1ODQ1MzkxMSwiZXhwIjoxNzU4NDU3NTExLCJhenAiOiJ5b3VyLWNsaWVudC1pZCIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlfQ.w_AxIxdXBmpFZeReHpy0YQAlgxnjsbvDI9lFtrxVDoQ"
+    }
+  },
+  "paths": {
+    "/api/v1/goals/": {
+      "get": {
+        "tags": ["goals"],
+        "summary": "Get Goals",
+        "description": "Get user's goals with filtering and pagination\n\n**Authentication**: Requires JWT Bearer token in Authorization header\n\n- **category**: Filter by category (optional)\n- **archived**: Include archived goals (default: false)\n- **timeframe**: Filter by timeframe (optional)\n- **limit**: Number of goals to return (default: 50, max: 100)\n- **offset**: Number of goals to skip (default: 0)\n- **include_stats**: Include goal statistics (default: false)",
+        "operationId": "get_goals_api_v1_goals__get",
+        "parameters": [
+          {
+            "name": "include_stats",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include goal statistics",
+              "default": false,
+              "title": "Include Stats"
+            },
+            "description": "Include goal statistics"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by goal category",
+              "title": "Category"
+            },
+            "description": "Filter by goal category"
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Include archived goals",
+              "default": false,
+              "title": "Archived"
+            },
+            "description": "Include archived goals"
+          },
+          {
+            "name": "timeframe",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by goal timeframe",
+              "title": "Timeframe"
+            },
+            "description": "Filter by goal timeframe"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 200,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Number of items to return",
+              "title": "Limit"
+            },
+            "description": "Number of items to return"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Number of items to skip",
+              "title": "Offset"
+            },
+            "description": "Number of items to skip"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/GoalsListResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/GoalsListWithStatsResponse"
+                    }
+                  ],
+                  "title": "Response Get Goals Api V1 Goals  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["goals"],
+        "summary": "Create Goal",
+        "description": "Create a new goal\n\n**Authentication**: Requires JWT Bearer token in Authorization header\n\n- **title**: Goal title (max 200 characters)\n- **description**: Goal description (optional, max 1000 characters)\n- **category**: Goal category (career, health, relationships, learning, financial, personal)\n- **timeframe**: Goal timeframe (3_months, 6_months, 1_year, ongoing)\n- **color**: Goal color (optional, hex or color name)",
+        "operationId": "create_goal_api_v1_goals__post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoalCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Goal"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/goals/{goal_id}": {
+      "get": {
+        "tags": ["goals"],
+        "summary": "Get Goal",
+        "description": "Get a specific goal by ID\n\n- **goal_id**: Goal unique identifier\n- **user_id**: User identifier (required)\n- **include_tasks**: Include associated tasks (default: false)",
+        "operationId": "get_goal_api_v1_goals__goal_id__get",
+        "parameters": [
+          {
+            "name": "goal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Goal ID",
+              "title": "Goal Id"
+            },
+            "description": "Goal ID"
+          },
+          {
+            "name": "include_tasks",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include associated tasks",
+              "default": false,
+              "title": "Include Tasks"
+            },
+            "description": "Include associated tasks"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Goal"
+                    },
+                    {
+                      "$ref": "#/components/schemas/GoalWithTasks"
+                    }
+                  ],
+                  "title": "Response Get Goal Api V1 Goals  Goal Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["goals"],
+        "summary": "Update Goal",
+        "description": "Update an existing goal\n\n- **goal_id**: Goal unique identifier\n- **user_id**: User identifier\n- **title**: Goal title (optional, max 200 characters)\n- **description**: Goal description (optional, max 1000 characters)\n- **category**: Goal category (optional)\n- **timeframe**: Goal timeframe (optional)\n- **color**: Goal color (optional)\n- **archived**: Archive status (optional)",
+        "operationId": "update_goal_api_v1_goals__goal_id__put",
+        "parameters": [
+          {
+            "name": "goal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Goal ID",
+              "title": "Goal Id"
+            },
+            "description": "Goal ID"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoalUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Goal"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["goals"],
+        "summary": "Delete Goal",
+        "description": "Delete a goal (soft delete - archives the goal)\n\n- **goal_id**: Goal unique identifier\n- **user_id**: User identifier (required)\n\nNote: This operation archives the goal rather than permanently deleting it.\nAssociated tasks will have their goal reference removed.",
+        "operationId": "delete_goal_api_v1_goals__goal_id__delete",
+        "parameters": [
+          {
+            "name": "goal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Goal ID",
+              "title": "Goal Id"
+            },
+            "description": "Goal ID"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/goals/{goal_id}/stats": {
+      "get": {
+        "tags": ["goals"],
+        "summary": "Get Goal Stats",
+        "description": "Get statistics for a specific goal\n\n- **goal_id**: Goal unique identifier\n- **user_id**: User identifier (required)\n\nReturns detailed statistics including:\n- Total, completed, and active tasks\n- Completion rate percentage\n- Average age of active tasks\n- Last activity timestamp",
+        "operationId": "get_goal_stats_api_v1_goals__goal_id__stats_get",
+        "parameters": [
+          {
+            "name": "goal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Goal ID",
+              "title": "Goal Id"
+            },
+            "description": "Goal ID"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalStats"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/goals/search": {
+      "get": {
+        "tags": ["goals"],
+        "summary": "Search Goals",
+        "description": "Search goals by title\n\n**Authentication**: Requires JWT Bearer token in Authorization header\n\n- **q**: Search query (minimum 2 characters, maximum 100 characters)\n- **category**: Filter by goal category (optional)\n- **archived**: Include archived goals (default: false)\n- **include_stats**: Include goal statistics (default: false)\n- **limit**: Number of goals to return (default: 50, max: 200)\n- **offset**: Number of goals to skip (default: 0)\n\nPerforms case-insensitive search on goal titles using PostgreSQL ilike.",
+        "operationId": "search_goals_api_v1_goals_search_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 100,
+              "description": "Search query (minimum 2 characters)",
+              "title": "Q"
+            },
+            "description": "Search query (minimum 2 characters)"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by goal category",
+              "title": "Category"
+            },
+            "description": "Filter by goal category"
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include archived goals",
+              "default": false,
+              "title": "Archived"
+            },
+            "description": "Include archived goals"
+          },
+          {
+            "name": "include_stats",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include goal statistics",
+              "default": false,
+              "title": "Include Stats"
+            },
+            "description": "Include goal statistics"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Number of goals to return",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Number of goals to return"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of goals to skip",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of goals to skip"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/GoalsListResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/GoalsListWithStatsResponse"
+                    }
+                  ],
+                  "title": "Response Search Goals Api V1 Goals Search Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/": {
+      "get": {
+        "tags": ["tasks"],
+        "summary": "Get Tasks",
+        "description": "Get user's tasks with filtering and pagination\n\n**Authentication**: Requires JWT Bearer token in Authorization header\n- **quadrant**: Filter by quadrant (Q1, Q2, Q3, Q4, staging)\n- **goal_id**: Filter by goal ID\n- **completed**: Filter by completion status\n- **is_staged**: Filter by staging status\n- **priority**: Filter by priority (low, medium, high, urgent)\n- **tags**: Filter by tags (comma-separated)\n- **limit**: Number of tasks to return (default: 100, max: 200)\n- **offset**: Number of tasks to skip (default: 0)\n- **include_goal**: Include goal information (default: false)",
+        "operationId": "get_tasks_api_v1_tasks__get",
+        "parameters": [
+          {
+            "name": "include_goal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include associated goal information",
+              "default": false,
+              "title": "Include Goal"
+            },
+            "description": "Include associated goal information"
+          },
+          {
+            "name": "quadrant",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by task quadrant",
+              "title": "Quadrant"
+            },
+            "description": "Filter by task quadrant"
+          },
+          {
+            "name": "goal_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by goal ID",
+              "title": "Goal Id"
+            },
+            "description": "Filter by goal ID"
+          },
+          {
+            "name": "completed",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by completion status",
+              "title": "Completed"
+            },
+            "description": "Filter by completion status"
+          },
+          {
+            "name": "is_staged",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by staging status",
+              "title": "Is Staged"
+            },
+            "description": "Filter by staging status"
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by priority",
+              "title": "Priority"
+            },
+            "description": "Filter by priority"
+          },
+          {
+            "name": "tags",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by tags (comma-separated)",
+              "title": "Tags"
+            },
+            "description": "Filter by tags (comma-separated)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 200,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Number of items to return",
+              "title": "Limit"
+            },
+            "description": "Number of items to return"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Number of items to skip",
+              "title": "Offset"
+            },
+            "description": "Number of items to skip"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TasksListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["tasks"],
+        "summary": "Create Task",
+        "description": "Create a new task\n\n**Authentication**: Requires JWT Bearer token in Authorization header\n\n- **title**: Task title (max 200 characters)\n- **description**: Task description (optional, max 1000 characters)\n- **goal_id**: Associated goal ID (optional)\n- **quadrant**: Task quadrant (Q1, Q2, Q3, Q4, staging)\n- **due_date**: Task due date (optional)\n- **estimated_minutes**: Estimated completion time (optional, 1-480 minutes)\n- **priority**: Task priority (low, medium, high, urgent)\n- **tags**: Task tags (optional, max 10 tags)",
+        "operationId": "create_task_api_v1_tasks__post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{task_id}": {
+      "get": {
+        "tags": ["tasks"],
+        "summary": "Get Task",
+        "description": "Get a specific task by ID\n\n- **task_id**: Task unique identifier\n**Authentication**: Requires JWT Bearer token in Authorization header\n- **include_goal**: Include associated goal information (default: false)",
+        "operationId": "get_task_api_v1_tasks__task_id__get",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Task ID",
+              "title": "Task Id"
+            },
+            "description": "Task ID"
+          },
+          {
+            "name": "include_goal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include associated goal information",
+              "default": false,
+              "title": "Include Goal"
+            },
+            "description": "Include associated goal information"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Task"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TaskWithGoal"
+                    }
+                  ],
+                  "title": "Response Get Task Api V1 Tasks  Task Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["tasks"],
+        "summary": "Update Task",
+        "description": "Update an existing task\n\n**Authentication**: Requires JWT Bearer token in Authorization header\n\n- **task_id**: Task unique identifier\n- **title**: Task title (optional, max 200 characters)\n- **description**: Task description (optional, max 1000 characters)\n- **goal_id**: Associated goal ID (optional)\n- **quadrant**: Task quadrant (optional)\n- **due_date**: Task due date (optional)\n- **estimated_minutes**: Estimated completion time (optional)\n- **priority**: Task priority (optional)\n- **tags**: Task tags (optional)\n- **completed**: Completion status (optional)\n- **position**: Task position within quadrant (optional)",
+        "operationId": "update_task_api_v1_tasks__task_id__put",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Task ID",
+              "title": "Task Id"
+            },
+            "description": "Task ID"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["tasks"],
+        "summary": "Delete Task",
+        "description": "Delete a task\n\n- **task_id**: Task unique identifier\n**Authentication**: Requires JWT Bearer token in Authorization header",
+        "operationId": "delete_task_api_v1_tasks__task_id__delete",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Task ID",
+              "title": "Task Id"
+            },
+            "description": "Task ID"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{task_id}/toggle": {
+      "patch": {
+        "tags": ["tasks"],
+        "summary": "Toggle Task Completion",
+        "description": "Toggle task completion status\n\n**Authentication**: Requires JWT Bearer token in Authorization header\n\n- **task_id**: Task unique identifier\n\nToggles the completion status of the task and updates completion timestamp.",
+        "operationId": "toggle_task_completion_api_v1_tasks__task_id__toggle_patch",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Task ID",
+              "title": "Task Id"
+            },
+            "description": "Task ID"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskToggle"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{task_id}/move": {
+      "patch": {
+        "tags": ["tasks"],
+        "summary": "Move Task",
+        "description": "Move a task to a different quadrant/position (Drag & Drop)\n\n**Authentication**: Requires JWT Bearer token in Authorization header\n\n- **task_id**: Task unique identifier\n- **quadrant**: Target quadrant (Q1, Q2, Q3, Q4, staging)\n- **position**: Target position within quadrant\n- **is_staged**: Whether task is staged (optional)\n\nMoves a task between quadrants and updates staging-related timestamps.",
+        "operationId": "move_task_api_v1_tasks__task_id__move_patch",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Task ID",
+              "title": "Task Id"
+            },
+            "description": "Task ID"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskMove"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/bulk": {
+      "patch": {
+        "tags": ["tasks"],
+        "summary": "Bulk Update Tasks",
+        "description": "Bulk update tasks (Drag & Drop Multiple)\n\n**Authentication**: Requires JWT Bearer token in Authorization header\n\n- **updates**: Array of task updates (max 50 items)\n\nEach update should contain:\n- **task_id**: Task unique identifier\n- **quadrant**: Target quadrant (optional)\n- **position**: Target position (optional)\n- **is_staged**: Staging status (optional)",
+        "operationId": "bulk_update_tasks_api_v1_tasks_bulk_patch",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskBulkUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Bulk Update Tasks Api V1 Tasks Bulk Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/staging/status": {
+      "get": {
+        "tags": ["tasks"],
+        "summary": "Get Staging Zone",
+        "description": "Get staging zone status and tasks\n\n**Authentication**: Requires JWT Bearer token in Authorization header\n\nReturns staging zone status including:\n- Current item count and capacity\n- Tasks in staging zone\n- Processing suggestions and reminders",
+        "operationId": "get_staging_zone_api_v1_tasks_staging_status_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StagingZoneResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/stats/summary": {
+      "get": {
+        "tags": ["tasks"],
+        "summary": "Get Task Stats",
+        "description": "Get task statistics summary\n\n**Authentication**: Requires JWT Bearer token in Authorization header\n\nReturns comprehensive task statistics including:\n- Total, completed, active, and overdue task counts\n- Staging zone status\n- Quadrant distribution",
+        "operationId": "get_task_stats_api_v1_tasks_stats_summary_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStats"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "description": "Root endpoint - API health check",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Root  Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api": {
+      "get": {
+        "summary": "Api Root",
+        "description": "API root endpoint",
+        "operationId": "api_root_api_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Api Root Api Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint for monitoring",
+        "operationId": "health_check_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Health Check Api Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Goal": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Goal title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Goal description"
+          },
+          "category": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GoalCategory"
+              }
+            ],
+            "description": "Goal category"
+          },
+          "timeframe": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GoalTimeframe"
+              }
+            ],
+            "description": "Goal timeframe"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color",
+            "description": "Goal color (hex or name)"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Goal unique identifier"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          },
+          "archived": {
+            "type": "boolean",
+            "title": "Archived",
+            "description": "Archive status",
+            "default": false
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Last update timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "category",
+          "timeframe",
+          "id",
+          "user_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Goal",
+        "description": "Goal response model"
+      },
+      "GoalCategory": {
+        "type": "string",
+        "enum": [
+          "career",
+          "health",
+          "relationships",
+          "learning",
+          "financial",
+          "personal"
+        ],
+        "title": "GoalCategory",
+        "description": "Goal category enumeration"
+      },
+      "GoalCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Goal title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Goal description"
+          },
+          "category": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GoalCategory"
+              }
+            ],
+            "description": "Goal category"
+          },
+          "timeframe": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GoalTimeframe"
+              }
+            ],
+            "description": "Goal timeframe"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color",
+            "description": "Goal color (hex or name)"
+          }
+        },
+        "type": "object",
+        "required": ["title", "category", "timeframe"],
+        "title": "GoalCreate",
+        "description": "Goal creation model - user_id is extracted from JWT token"
+      },
+      "GoalStats": {
+        "properties": {
+          "total_tasks": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Total Tasks",
+            "description": "Total number of tasks",
+            "default": 0
+          },
+          "completed_tasks": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Completed Tasks",
+            "description": "Number of completed tasks",
+            "default": 0
+          },
+          "active_tasks": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Active Tasks",
+            "description": "Number of active tasks",
+            "default": 0
+          },
+          "completion_rate": {
+            "type": "number",
+            "maximum": 100,
+            "minimum": 0,
+            "title": "Completion Rate",
+            "description": "Completion rate percentage",
+            "default": 0
+          },
+          "average_task_age": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Task Age",
+            "description": "Average age of active tasks in days"
+          },
+          "last_activity_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Activity At",
+            "description": "Last activity timestamp"
+          }
+        },
+        "type": "object",
+        "title": "GoalStats",
+        "description": "Goal statistics model"
+      },
+      "GoalTimeframe": {
+        "type": "string",
+        "enum": ["3_months", "6_months", "1_year", "ongoing"],
+        "title": "GoalTimeframe",
+        "description": "Goal timeframe enumeration"
+      },
+      "GoalUpdate": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "User Id",
+            "description": "User identifier"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title",
+            "description": "Goal title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Goal description"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GoalCategory"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Goal category"
+          },
+          "timeframe": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GoalTimeframe"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Goal timeframe"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color",
+            "description": "Goal color"
+          },
+          "archived": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archived",
+            "description": "Archive status"
+          }
+        },
+        "type": "object",
+        "required": ["user_id"],
+        "title": "GoalUpdate",
+        "description": "Goal update model - all fields optional"
+      },
+      "GoalWithStats": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Goal title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Goal description"
+          },
+          "category": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GoalCategory"
+              }
+            ],
+            "description": "Goal category"
+          },
+          "timeframe": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GoalTimeframe"
+              }
+            ],
+            "description": "Goal timeframe"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color",
+            "description": "Goal color (hex or name)"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Goal unique identifier"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          },
+          "archived": {
+            "type": "boolean",
+            "title": "Archived",
+            "description": "Archive status",
+            "default": false
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Last update timestamp"
+          },
+          "total_tasks": {
+            "type": "integer",
+            "title": "Total Tasks",
+            "description": "Total number of tasks",
+            "default": 0
+          },
+          "completed_tasks": {
+            "type": "integer",
+            "title": "Completed Tasks",
+            "description": "Number of completed tasks",
+            "default": 0
+          },
+          "active_tasks": {
+            "type": "integer",
+            "title": "Active Tasks",
+            "description": "Number of active tasks",
+            "default": 0
+          },
+          "completion_rate": {
+            "type": "number",
+            "maximum": 100,
+            "minimum": 0,
+            "title": "Completion Rate",
+            "description": "Completion rate percentage",
+            "default": 0
+          },
+          "average_task_age": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Task Age",
+            "description": "Average age of active tasks in days"
+          },
+          "last_activity_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Activity At",
+            "description": "Last activity timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "category",
+          "timeframe",
+          "id",
+          "user_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "GoalWithStats",
+        "description": "Goal with statistics"
+      },
+      "GoalWithTasks": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Goal title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Goal description"
+          },
+          "category": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GoalCategory"
+              }
+            ],
+            "description": "Goal category"
+          },
+          "timeframe": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GoalTimeframe"
+              }
+            ],
+            "description": "Goal timeframe"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color",
+            "description": "Goal color (hex or name)"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Goal unique identifier"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          },
+          "archived": {
+            "type": "boolean",
+            "title": "Archived",
+            "description": "Archive status",
+            "default": false
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Last update timestamp"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/TaskSummary"
+            },
+            "type": "array",
+            "title": "Tasks",
+            "description": "Associated tasks"
+          },
+          "stats": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GoalStats"
+              }
+            ],
+            "description": "Goal statistics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "category",
+          "timeframe",
+          "id",
+          "user_id",
+          "created_at",
+          "updated_at",
+          "stats"
+        ],
+        "title": "GoalWithTasks",
+        "description": "Goal with associated tasks"
+      },
+      "GoalsListResponse": {
+        "properties": {
+          "goals": {
+            "items": {
+              "$ref": "#/components/schemas/Goal"
+            },
+            "type": "array",
+            "title": "Goals",
+            "description": "List of goals"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Total",
+            "description": "Total number of goals"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More",
+            "description": "Whether there are more goals"
+          }
+        },
+        "type": "object",
+        "required": ["goals", "total", "has_more"],
+        "title": "GoalsListResponse",
+        "description": "Response model for goals list"
+      },
+      "GoalsListWithStatsResponse": {
+        "properties": {
+          "goals": {
+            "items": {
+              "$ref": "#/components/schemas/GoalWithStats"
+            },
+            "type": "array",
+            "title": "Goals",
+            "description": "List of goals with statistics"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Total",
+            "description": "Total number of goals"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More",
+            "description": "Whether there are more goals"
+          }
+        },
+        "type": "object",
+        "required": ["goals", "total", "has_more"],
+        "title": "GoalsListWithStatsResponse",
+        "description": "Response model for goals list with statistics"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "StagingZoneResponse": {
+        "properties": {
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StagingZoneStatus"
+              }
+            ],
+            "description": "Staging zone status"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            },
+            "type": "array",
+            "title": "Tasks",
+            "description": "Tasks in staging zone"
+          },
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggestions",
+            "description": "Organization suggestions"
+          }
+        },
+        "type": "object",
+        "required": ["status", "tasks"],
+        "title": "StagingZoneResponse",
+        "description": "Staging zone response model"
+      },
+      "StagingZoneStatus": {
+        "properties": {
+          "current_count": {
+            "type": "integer",
+            "maximum": 5,
+            "minimum": 0,
+            "title": "Current Count",
+            "description": "Current number of items in staging"
+          },
+          "max_capacity": {
+            "type": "integer",
+            "title": "Max Capacity",
+            "description": "Maximum staging zone capacity",
+            "default": 5
+          },
+          "is_full": {
+            "type": "boolean",
+            "title": "Is Full",
+            "description": "Whether staging zone is at capacity"
+          },
+          "oldest_item": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oldest Item",
+            "description": "Information about oldest staged item"
+          },
+          "processing_reminder": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processing Reminder",
+            "description": "Processing reminder message"
+          }
+        },
+        "type": "object",
+        "required": ["current_count", "is_full"],
+        "title": "StagingZoneStatus",
+        "description": "Staging zone status model"
+      },
+      "Task": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Task title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Task description"
+          },
+          "quadrant": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaskQuadrant"
+              }
+            ],
+            "description": "Task quadrant"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date",
+            "description": "Task due date"
+          },
+          "estimated_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 480,
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Minutes",
+            "description": "Estimated completion time in minutes"
+          },
+          "priority": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaskPriority"
+              }
+            ],
+            "description": "Task priority",
+            "default": "medium"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Tags",
+            "description": "Task tags"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Task unique identifier"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          },
+          "goal_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal Id",
+            "description": "Associated goal ID"
+          },
+          "completed": {
+            "type": "boolean",
+            "title": "Completed",
+            "description": "Completion status",
+            "default": false
+          },
+          "is_staged": {
+            "type": "boolean",
+            "title": "Is Staged",
+            "description": "Whether task is in staging zone",
+            "default": false
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position",
+            "description": "Task position within quadrant",
+            "default": 0
+          },
+          "staged_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Staged At",
+            "description": "When task was moved to staging"
+          },
+          "organized_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organized At",
+            "description": "When task was organized from staging"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At",
+            "description": "When task was completed"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Last update timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "quadrant",
+          "id",
+          "user_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Task",
+        "description": "Task response model"
+      },
+      "TaskBulkUpdate": {
+        "properties": {
+          "updates": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Updates",
+            "description": "Task updates"
+          }
+        },
+        "type": "object",
+        "required": ["updates"],
+        "title": "TaskBulkUpdate",
+        "description": "Bulk task update model - user_id is extracted from JWT token"
+      },
+      "TaskCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Task title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Task description"
+          },
+          "quadrant": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaskQuadrant"
+              }
+            ],
+            "description": "Task quadrant"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date",
+            "description": "Task due date"
+          },
+          "estimated_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 480,
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Minutes",
+            "description": "Estimated completion time in minutes"
+          },
+          "priority": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaskPriority"
+              }
+            ],
+            "description": "Task priority",
+            "default": "medium"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Tags",
+            "description": "Task tags"
+          },
+          "goal_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal Id",
+            "description": "Associated goal ID"
+          }
+        },
+        "type": "object",
+        "required": ["title", "quadrant"],
+        "title": "TaskCreate",
+        "description": "Task creation model - user_id is extracted from JWT token"
+      },
+      "TaskMove": {
+        "properties": {
+          "quadrant": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaskQuadrant"
+              }
+            ],
+            "description": "Target quadrant"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Position",
+            "description": "Target position",
+            "default": 0
+          },
+          "is_staged": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Staged",
+            "description": "Whether task is staged"
+          }
+        },
+        "type": "object",
+        "required": ["quadrant"],
+        "title": "TaskMove",
+        "description": "Task move model for drag & drop - user_id is extracted from JWT token"
+      },
+      "TaskPriority": {
+        "type": "string",
+        "enum": ["low", "medium", "high", "urgent"],
+        "title": "TaskPriority",
+        "description": "Task priority enumeration"
+      },
+      "TaskQuadrant": {
+        "type": "string",
+        "enum": ["Q1", "Q2", "Q3", "Q4", "staging"],
+        "title": "TaskQuadrant",
+        "description": "Task quadrant enumeration"
+      },
+      "TaskStats": {
+        "properties": {
+          "total_tasks": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Total Tasks",
+            "description": "Total number of tasks",
+            "default": 0
+          },
+          "completed_tasks": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Completed Tasks",
+            "description": "Number of completed tasks",
+            "default": 0
+          },
+          "active_tasks": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Active Tasks",
+            "description": "Number of active tasks",
+            "default": 0
+          },
+          "overdue_tasks": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Overdue Tasks",
+            "description": "Number of overdue tasks",
+            "default": 0
+          },
+          "staging_tasks": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Staging Tasks",
+            "description": "Number of tasks in staging",
+            "default": 0
+          },
+          "quadrant_distribution": {
+            "type": "object",
+            "title": "Quadrant Distribution",
+            "description": "Task distribution by quadrant"
+          }
+        },
+        "type": "object",
+        "title": "TaskStats",
+        "description": "Task statistics model"
+      },
+      "TaskSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Task ID"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Task title"
+          },
+          "completed": {
+            "type": "boolean",
+            "title": "Completed",
+            "description": "Completion status"
+          },
+          "quadrant": {
+            "type": "string",
+            "title": "Quadrant",
+            "description": "Task quadrant"
+          }
+        },
+        "type": "object",
+        "required": ["id", "title", "completed", "quadrant"],
+        "title": "TaskSummary",
+        "description": "Summary of a task for goal details"
+      },
+      "TaskToggle": {
+        "properties": {},
+        "type": "object",
+        "title": "TaskToggle",
+        "description": "Task completion toggle model - user_id is extracted from JWT token"
+      },
+      "TaskUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title",
+            "description": "Task title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Task description"
+          },
+          "goal_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal Id",
+            "description": "Associated goal ID"
+          },
+          "quadrant": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TaskQuadrant"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Task quadrant"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date",
+            "description": "Task due date"
+          },
+          "estimated_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 480,
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Minutes",
+            "description": "Estimated completion time"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TaskPriority"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Task priority"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 10
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags",
+            "description": "Task tags"
+          },
+          "completed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed",
+            "description": "Completion status"
+          },
+          "position": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position",
+            "description": "Task position within quadrant"
+          }
+        },
+        "type": "object",
+        "title": "TaskUpdate",
+        "description": "Task update model - all fields optional, user_id is extracted from JWT token"
+      },
+      "TaskWithGoal": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Task title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Task description"
+          },
+          "quadrant": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaskQuadrant"
+              }
+            ],
+            "description": "Task quadrant"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date",
+            "description": "Task due date"
+          },
+          "estimated_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 480,
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Minutes",
+            "description": "Estimated completion time in minutes"
+          },
+          "priority": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaskPriority"
+              }
+            ],
+            "description": "Task priority",
+            "default": "medium"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Tags",
+            "description": "Task tags"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Task unique identifier"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          },
+          "goal_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal Id",
+            "description": "Associated goal ID"
+          },
+          "completed": {
+            "type": "boolean",
+            "title": "Completed",
+            "description": "Completion status",
+            "default": false
+          },
+          "is_staged": {
+            "type": "boolean",
+            "title": "Is Staged",
+            "description": "Whether task is in staging zone",
+            "default": false
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position",
+            "description": "Task position within quadrant",
+            "default": 0
+          },
+          "staged_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Staged At",
+            "description": "When task was moved to staging"
+          },
+          "organized_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organized At",
+            "description": "When task was organized from staging"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At",
+            "description": "When task was completed"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Last update timestamp"
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal",
+            "description": "Associated goal information"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "quadrant",
+          "id",
+          "user_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TaskWithGoal",
+        "description": "Task with associated goal information"
+      },
+      "TasksListResponse": {
+        "properties": {
+          "tasks": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Task"
+                },
+                {
+                  "$ref": "#/components/schemas/TaskWithGoal"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Tasks",
+            "description": "List of tasks"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Total",
+            "description": "Total number of tasks"
+          },
+          "has_more": {
+            "type": "boolean",
+            "title": "Has More",
+            "description": "Whether there are more tasks"
+          }
+        },
+        "type": "object",
+        "required": ["tasks", "total", "has_more"],
+        "title": "TasksListResponse",
+        "description": "Response model for tasks list"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Bearer token from Google OAuth authentication. Example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}

@@ -11,21 +11,34 @@ import {
 } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Board } from './pages/Board';
 import { Goals } from './pages/Goals';
 import { Insights } from './pages/Insights';
+import { Login } from './pages/Login';
 import { theme } from './theme';
 
-function AppContent() {
+interface AppContentProps {
+  onThemeChange: (theme: 'light' | 'dark') => void;
+}
+
+function AppContent({ onThemeChange }: AppContentProps) {
   const { user, loading, logout } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(false);
 
+  // Initialize dark mode state from localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    setIsDarkMode(savedTheme === 'dark');
+  }, []);
+
   const handleThemeToggle = () => {
-    setIsDarkMode(prev => !prev);
+    const newTheme = isDarkMode ? 'light' : 'dark';
+    setIsDarkMode(!isDarkMode);
+    onThemeChange(newTheme);
   };
 
   if (loading) {
@@ -73,49 +86,7 @@ function AppContent() {
   }
 
   if (!user) {
-    // For now, automatically redirect since we're using mock auth
-    // In a real app, this would show a login page
-    return (
-      <Center h="100vh" w="100vw">
-        <Stack align="center" gap="lg" ta="center">
-          {/* Logo */}
-          <Box
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: rem(64),
-              height: rem(64),
-              borderRadius: rem(16),
-              background:
-                'linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-green-6))',
-              marginBottom: rem(8),
-            }}
-          >
-            <Text
-              size="xl"
-              fw={700}
-              style={{ color: 'white', fontSize: rem(28) }}
-            >
-              ※
-            </Text>
-          </Box>
-
-          <Title
-            order={1}
-            ta="center"
-            fw={700}
-            style={{ color: 'var(--mantine-color-gray-8)' }}
-          >
-            Quadrant Planner
-          </Title>
-          <Text size="md" style={{ color: 'var(--mantine-color-gray-6)' }}>
-            Redirecting to dashboard...
-          </Text>
-          <Loader size="md" style={{ marginTop: rem(16) }} />
-        </Stack>
-      </Center>
-    );
+    return <Login />;
   }
 
   return (
@@ -142,15 +113,35 @@ function AppContent() {
 }
 
 function App() {
+  const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light');
+
+  // Load theme preference from localStorage on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark' || savedTheme === 'light') {
+      setColorScheme(savedTheme);
+    }
+  }, []);
+
+  // Save theme preference to localStorage
+  const handleThemeChange = (newTheme: 'light' | 'dark') => {
+    setColorScheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+
   return (
     <>
       <ColorSchemeScript defaultColorScheme="light" />
-      <MantineProvider theme={theme} defaultColorScheme="light">
+      <MantineProvider
+        theme={theme}
+        defaultColorScheme={colorScheme}
+        forceColorScheme={colorScheme}
+      >
         <Notifications />
         <ModalsProvider>
           <BrowserRouter>
             <AuthProvider>
-              <AppContent />
+              <AppContent onThemeChange={handleThemeChange} />
             </AuthProvider>
           </BrowserRouter>
         </ModalsProvider>

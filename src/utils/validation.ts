@@ -198,7 +198,7 @@ export function validateGoalLimit(
   const errors: string[] = [];
   const maxGoals = 12;
 
-  const activeGoals = currentGoals.filter(goal => !goal.archived);
+  const activeGoals = currentGoals.filter(goal => !(goal.archived ?? false));
   const goalCount = isCreating ? activeGoals.length + 1 : activeGoals.length;
 
   if (goalCount > maxGoals) {

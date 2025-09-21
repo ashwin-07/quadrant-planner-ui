@@ -44,10 +44,11 @@ export function QuadrantZone({
       style={{
         height: '100%',
         minHeight: '400px',
-        border: `2px solid var(--mantine-color-${themeColor}-3)`,
+        border: `1px solid var(--mantine-color-gray-2)`,
         borderRadius: 'var(--mantine-radius-lg)',
         backgroundColor: `var(--mantine-color-${themeColor}-0)`,
         position: 'relative',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
       }}
     >
       {/* Header */}
@@ -93,7 +94,7 @@ export function QuadrantZone({
               minHeight: '300px',
               backgroundColor: snapshot.isDraggingOver
                 ? `var(--mantine-color-${themeColor}-1)`
-                : 'transparent',
+                : `var(--mantine-color-${themeColor}-0)`,
               transition: 'background-color 0.2s ease',
             }}
           >
@@ -126,6 +127,7 @@ export function QuadrantZone({
                         onEdit={onEditTask}
                         onDelete={onDeleteTask}
                         isDragging={snapshot.isDragging}
+                        quadrantColor={themeColor}
                       />
                     )}
                   </Draggable>

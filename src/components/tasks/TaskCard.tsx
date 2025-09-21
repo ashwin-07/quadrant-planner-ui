@@ -25,10 +25,22 @@ interface TaskCardProps {
   onEdit: (task: Task) => void;
   onDelete: (taskId: string) => void;
   isDragging?: boolean;
+  quadrantColor?: string;
 }
 
 export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
-  ({ task, onToggleComplete, onEdit, onDelete, isDragging, ...props }, ref) => {
+  (
+    {
+      task,
+      onToggleComplete,
+      onEdit,
+      onDelete,
+      isDragging,
+      quadrantColor,
+      ...props
+    },
+    ref
+  ) => {
     // const categoryConfig = GOAL_CATEGORIES[
     //   task.goalId ? 'career' : 'personal'
     // ] // Default fallback
@@ -46,12 +58,14 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
           opacity: isDragging ? 0.5 : 1,
           transform: isDragging ? 'rotate(5deg)' : 'none',
           transition: 'all 0.2s ease',
-          borderLeft: `3px solid ${
-            task.priority === 'high'
-              ? 'var(--mantine-color-red-5)'
-              : task.priority === 'medium'
-                ? 'var(--mantine-color-yellow-5)'
-                : 'var(--mantine-color-gray-4)'
+          borderLeft: `4px solid ${
+            quadrantColor
+              ? `var(--mantine-color-${quadrantColor}-6)`
+              : task.priority === 'high'
+                ? 'var(--mantine-color-red-6)'
+                : task.priority === 'medium'
+                  ? 'var(--mantine-color-yellow-6)'
+                  : 'var(--mantine-color-gray-5)'
           }`,
         }}
         {...props}

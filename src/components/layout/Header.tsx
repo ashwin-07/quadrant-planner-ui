@@ -7,7 +7,6 @@ import {
   Group,
   Menu,
   Text,
-  Tooltip,
   UnstyledButton,
   rem,
   useMantineTheme,
@@ -17,9 +16,7 @@ import {
   IconChevronLeft,
   IconLogout,
   IconMenu2,
-  IconMoon,
   IconSettings,
-  IconSun,
   IconUser,
 } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -27,8 +24,6 @@ import { useState } from 'react';
 interface HeaderProps {
   user: User;
   onLogout: () => void;
-  onThemeToggle: () => void;
-  isDarkMode: boolean;
   navbarCollapsed: boolean;
   onToggleNavbar: () => void;
 }
@@ -36,8 +31,6 @@ interface HeaderProps {
 export function Header({
   user,
   onLogout,
-  onThemeToggle,
-  isDarkMode,
   navbarCollapsed,
   onToggleNavbar,
 }: HeaderProps) {
@@ -94,8 +87,8 @@ export function Header({
 
         {/* Right side - User actions */}
         <Group gap="sm">
-          {/* Theme Toggle */}
-          <Tooltip
+          {/* Theme Toggle - Hidden for now */}
+          {/* <Tooltip
             label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             <ActionIcon
@@ -110,7 +103,7 @@ export function Header({
                 <IconMoon size={18} stroke={1.5} />
               )}
             </ActionIcon>
-          </Tooltip>
+          </Tooltip> */}
 
           {/* User Menu */}
           <Menu

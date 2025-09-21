@@ -1,9 +1,9 @@
+import { OverlayModal } from '@/components/common/OverlayModal';
 import type { CreateTaskInput, QuadrantType, Task } from '@/types';
 import { validateTask } from '@/utils/validation';
 import {
   Button,
   Group,
-  Modal,
   Select,
   Stack,
   TagsInput,
@@ -13,6 +13,7 @@ import {
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
+import { GoalSearchSelect } from './GoalSearchSelect';
 
 interface TaskFormProps {
   opened: boolean;
@@ -35,7 +36,10 @@ const priorityOptions = [
   { value: 'low', label: 'Low' },
   { value: 'medium', label: 'Medium' },
   { value: 'high', label: 'High' },
+  { value: 'urgent', label: 'Urgent' },
 ];
+
+// Goal options will be created from the goals data
 
 export function TaskForm({
   opened,
@@ -45,13 +49,13 @@ export function TaskForm({
   task,
   defaultQuadrant = 'staging',
 }: TaskFormProps) {
-  const form = useForm<CreateTaskInput>({
+  const form = useForm<CreateTaskInput & { dueDate?: Date }>({
     initialValues: {
       title: task?.title || '',
       description: task?.description || '',
       quadrant: task?.quadrant || defaultQuadrant,
       priority: task?.priority || 'medium',
-      dueDate: task?.dueDate || undefined,
+      dueDate: task?.dueDate ? new Date(task.dueDate) : undefined,
       estimatedMinutes: task?.estimatedMinutes || undefined,
       tags: task?.tags || [],
       goalId: task?.goalId || undefined,
@@ -75,37 +79,33 @@ export function TaskForm({
     },
   });
 
-  const handleSubmit = (values: CreateTaskInput) => {
-    onSubmit(values);
-    form.reset();
+  const handleSubmit = (values: CreateTaskInput & { dueDate?: Date }) => {
+    // Convert Date object to ISO string for API
+    const taskData: CreateTaskInput = {
+      ...values,
+      dueDate: values.dueDate ? values.dueDate.toISOString() : undefined,
+    };
+    onSubmit(taskData);
+
+    // Reset form to initial values (including defaultQuadrant for new tasks)
+    form.setValues({
+      title: '',
+      description: '',
+      quadrant: defaultQuadrant,
+      priority: 'medium',
+      dueDate: undefined,
+      estimatedMinutes: undefined,
+      tags: [],
+      goalId: undefined,
+    });
     onClose();
   };
 
   return (
-    <Modal
+    <OverlayModal
       opened={opened}
       onClose={onClose}
       title={task ? 'Edit Task' : 'Create New Task'}
-      size="md"
-      centered
-      zIndex={1000}
-      portalProps={{ target: document.body }}
-      styles={{
-        modal: {
-          position: 'fixed !important',
-          top: '50vh !important',
-          left: '50vw !important',
-          transform: 'translate(-50%, -50%) !important',
-          margin: '0 !important',
-        },
-        overlay: {
-          position: 'fixed !important',
-          top: '0 !important',
-          left: '0 !important',
-          right: '0 !important',
-          bottom: '0 !important',
-        },
-      }}
     >
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="md">
@@ -128,7 +128,11 @@ export function TaskForm({
               label="Quadrant"
               placeholder="Select quadrant"
               data={quadrantOptions}
+              searchable
               required
+              withinPortal
+              zIndex={9999}
+              dropdownOpened={undefined}
               {...form.getInputProps('quadrant')}
             />
 
@@ -136,16 +140,29 @@ export function TaskForm({
               label="Priority"
               placeholder="Select priority"
               data={priorityOptions}
+              searchable
               required
+              withinPortal
+              zIndex={9999}
+              dropdownOpened={undefined}
               {...form.getInputProps('priority')}
             />
           </Group>
+
+          <GoalSearchSelect
+            value={form.values.goalId}
+            onChange={value => form.setFieldValue('goalId', value)}
+            disabled={loading}
+          />
 
           <Group grow>
             <DateInput
               label="Due Date"
               placeholder="Select due date"
               clearable
+              withinPortal
+              zIndex={9999}
+              dropdownOpened={undefined}
               {...form.getInputProps('dueDate')}
             />
 
@@ -166,7 +183,7 @@ export function TaskForm({
             {...form.getInputProps('tags')}
           />
 
-          <Text size="xs" c="dimmed">
+          <Text size="xs" style={{ color: 'var(--mantine-color-gray-6)' }}>
             You can drag tasks between quadrants after creation to reorganize
             them.
           </Text>
@@ -181,6 +198,6 @@ export function TaskForm({
           </Group>
         </Stack>
       </form>
-    </Modal>
+    </OverlayModal>
   );
 }

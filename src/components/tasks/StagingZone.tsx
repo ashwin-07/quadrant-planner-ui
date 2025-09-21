@@ -33,10 +33,11 @@ export function StagingZone({
   return (
     <Box
       style={{
-        border: '2px dashed var(--mantine-color-blue-4)',
+        border: '2px dashed var(--mantine-color-blue-3)',
         borderRadius: 'var(--mantine-radius-lg)',
         backgroundColor: 'var(--mantine-color-blue-0)',
         marginBottom: 'var(--mantine-spacing-xl)',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
       }}
     >
       {/* Header */}
@@ -122,7 +123,7 @@ export function StagingZone({
                 minHeight: '120px',
                 backgroundColor: snapshot.isDraggingOver
                   ? 'var(--mantine-color-blue-1)'
-                  : 'transparent',
+                  : 'var(--mantine-color-blue-0)',
                 transition: 'background-color 0.2s ease',
               }}
             >
@@ -168,6 +169,7 @@ export function StagingZone({
                             onEdit={onEditTask}
                             onDelete={onDeleteTask}
                             isDragging={snapshot.isDragging}
+                            quadrantColor="blue"
                           />
                         </Box>
                       )}

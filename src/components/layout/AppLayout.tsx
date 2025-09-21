@@ -40,7 +40,7 @@ export function AppLayout({
       />
       <Sidebar onLogout={onLogout} collapsed={navbarCollapsed} />
 
-      <AppShell.Main>
+      <AppShell.Main style={{ width: '100%', maxWidth: 'none' }}>
         <Outlet />
       </AppShell.Main>
     </AppShell>

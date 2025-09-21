@@ -2,7 +2,7 @@ import type { User } from '@/types';
 import { createMockUser } from '@/utils/mockData';
 import {
   createContext,
-  ReactNode,
+  type ReactNode,
   useContext,
   useEffect,
   useState,
@@ -10,7 +10,13 @@ import {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string) => Promise<void>;
+  token: string | null;
+  login: (
+    email: string,
+    provider?: string,
+    userData?: Partial<User>,
+    token?: string
+  ) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -23,6 +29,7 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,17 +39,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Simulate API call to check session
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // For now, automatically log in with mock user
-        // In real app, check localStorage/sessionStorage for token
+        // Check for existing session
         const savedUser = localStorage.getItem('user');
+        const savedToken = localStorage.getItem('jwt_token');
+
         if (savedUser) {
           setUser(JSON.parse(savedUser));
-        } else {
-          // Auto-login for demo
-          const mockUser = createMockUser();
-          setUser(mockUser);
-          localStorage.setItem('user', JSON.stringify(mockUser));
         }
+        if (savedToken) {
+          console.log(
+            'Loading JWT token from localStorage:',
+            savedToken.substring(0, 20) + '...'
+          );
+          setToken(savedToken);
+        }
+        // No auto-login - user must sign in
       } catch (error) {
         console.error('Auth initialization failed:', error);
       } finally {
@@ -53,16 +64,52 @@ export function AuthProvider({ children }: AuthProviderProps) {
     initAuth();
   }, []);
 
-  const login = async (email: string) => {
+  const login = async (
+    email: string,
+    provider: string = 'email',
+    userData?: Partial<User>,
+    jwtToken?: string
+  ) => {
     setLoading(true);
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // For demo, always succeed with mock user
-      const loginUser = createMockUser(email);
+      let loginUser: User;
+
+      if (userData && provider === 'google-oauth') {
+        // Use real Google user data
+        loginUser = {
+          id: userData.id || 'google-user',
+          email: email,
+          name: userData.name || 'Google User',
+          fullName: userData.name || 'Google User',
+          avatarUrl: (userData as { avatar?: string }).avatar || '',
+          onboarded: true,
+          lastLoginAt: new Date().toISOString(),
+          preferences: {
+            colorScheme: 'auto',
+            defaultQuadrant: 'staging',
+            stagingReminders: true,
+            emailNotifications: true,
+            weeklyReview: true,
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+      } else {
+        // Fallback to mock user for demo/guest mode
+        loginUser = createMockUser(email);
+      }
+
       setUser(loginUser);
       localStorage.setItem('user', JSON.stringify(loginUser));
+
+      // Store JWT token if provided
+      if (jwtToken) {
+        setToken(jwtToken);
+        localStorage.setItem('jwt_token', jwtToken);
+      }
     } catch {
       throw new Error('Login failed');
     } finally {
@@ -72,11 +119,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = () => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('jwt_token');
   };
 
   const value = {
     user,
+    token,
     login,
     logout,
     loading,

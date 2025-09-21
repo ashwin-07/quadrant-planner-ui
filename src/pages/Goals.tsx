@@ -1,6 +1,6 @@
 import { GoalCard } from '@/components/goals/GoalCard';
+import { useGoals } from '@/hooks/useGoals';
 import type { CreateGoalInput, Goal } from '@/types';
-import { generateId } from '@/utils';
 import {
   ActionIcon,
   Badge,
@@ -8,8 +8,8 @@ import {
   Button,
   Center,
   Collapse,
-  Container,
   Group,
+  Loader,
   Paper,
   Select,
   SimpleGrid,
@@ -29,126 +29,6 @@ import {
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 
-// Mock data for development
-const mockGoals: Goal[] = [
-  {
-    id: '1',
-    userId: 'user1',
-    title: 'Master Advanced React Hooks',
-    description:
-      'Deep dive into custom hooks, useContext, and useReducer to build scalable React applications.',
-    category: 'learning',
-    timeframe: '3_months',
-    color: 'violet',
-    archived: false,
-    createdAt: '2025-01-01T00:00:00Z',
-    updatedAt: '2025-01-01T00:00:00Z',
-  },
-  {
-    id: '2',
-    userId: 'user1',
-    title: 'Run a Half Marathon',
-    description:
-      'Follow a structured 12-week training plan, including speed work and long runs.',
-    category: 'health',
-    timeframe: '6_months',
-    color: 'green',
-    archived: false,
-    createdAt: '2025-01-01T00:00:00Z',
-    updatedAt: '2025-01-01T00:00:00Z',
-  },
-  {
-    id: '3',
-    userId: 'user1',
-    title: 'Automate Monthly Financial Report',
-    description:
-      'Develop a Python script to automatically pull data from bank APIs and generate monthly reports.',
-    category: 'financial',
-    timeframe: '3_months',
-    color: 'yellow',
-    archived: false,
-    createdAt: '2025-01-01T00:00:00Z',
-    updatedAt: '2025-01-01T00:00:00Z',
-  },
-  {
-    id: '4',
-    userId: 'user1',
-    title: 'Volunteer for a Community Project',
-    description:
-      'Dedicate 4 hours a week to a local environmental cleanup initiative.',
-    category: 'personal',
-    timeframe: 'ongoing',
-    color: 'orange',
-    archived: false,
-    createdAt: '2025-01-01T00:00:00Z',
-    updatedAt: '2025-01-01T00:00:00Z',
-  },
-  {
-    id: '5',
-    userId: 'user1',
-    title: 'Complete Cloud Certification (AWS)',
-    description:
-      'Study for and pass the AWS Certified Solutions Architect – Associate exam.',
-    category: 'career',
-    timeframe: '6_months',
-    color: 'blue',
-    archived: false,
-    createdAt: '2025-01-01T00:00:00Z',
-    updatedAt: '2025-01-01T00:00:00Z',
-  },
-  {
-    id: '6',
-    userId: 'user1',
-    title: 'Read 12 Non-Fiction Books',
-    description:
-      'Read one non-fiction book per month covering topics such as psychology, business, and self-improvement.',
-    category: 'learning',
-    timeframe: '1_year',
-    color: 'violet',
-    archived: false,
-    createdAt: '2025-01-01T00:00:00Z',
-    updatedAt: '2025-01-01T00:00:00Z',
-  },
-  {
-    id: '7',
-    userId: 'user1',
-    title: 'Start a Personal Blog on Productivity',
-    description:
-      'Set up a personal blog to share insights and tips on productivity, with weekly posts.',
-    category: 'career',
-    timeframe: 'ongoing',
-    color: 'blue',
-    archived: false,
-    createdAt: '2025-01-01T00:00:00Z',
-    updatedAt: '2025-01-01T00:00:00Z',
-  },
-  {
-    id: '8',
-    userId: 'user1',
-    title: 'Improve Cardiovascular Health',
-    description:
-      'Engage in at least 30 minutes of moderate-intensity exercise 5 days a week.',
-    category: 'health',
-    timeframe: '1_year',
-    color: 'green',
-    archived: false,
-    createdAt: '2025-01-01T00:00:00Z',
-    updatedAt: '2025-01-01T00:00:00Z',
-  },
-];
-
-// Mock task counts for goals
-const mockTaskCounts = {
-  '1': { total: 3, completed: 1 },
-  '2': { total: 5, completed: 2 },
-  '3': { total: 1, completed: 1 },
-  '4': { total: 2, completed: 0 },
-  '5': { total: 4, completed: 0 },
-  '6': { total: 1, completed: 0 },
-  '7': { total: 7, completed: 3 },
-  '8': { total: 6, completed: 4 },
-};
-
 const categoryFilters = [
   { value: 'all', label: 'All' },
   { value: 'career', label: 'Career' },
@@ -160,53 +40,45 @@ const categoryFilters = [
 ];
 
 export function Goals() {
-  const [goals, setGoals] = useState<Goal[]>(mockGoals);
+  // Use the Goals API hook
+  const { goals, loading, error, createGoal, deleteGoal, refreshGoals } =
+    useGoals({ archived: false });
+
   const [activeFilter, setActiveFilter] = useState<string>('all');
-  const [loading, setLoading] = useState(false);
   const [quickCreateExpanded, setQuickCreateExpanded] = useState(false);
 
   // Filter goals based on active filter
   const filteredGoals = useMemo(() => {
     if (activeFilter === 'all') {
-      return goals.filter(goal => !goal.archived);
+      return goals.filter(goal => !(goal.archived ?? false));
     }
     return goals.filter(
-      goal => !goal.archived && goal.category === activeFilter
+      goal => !(goal.archived ?? false) && goal.category === activeFilter
     );
   }, [goals, activeFilter]);
 
   const handleCreateGoal = async (goalData: CreateGoalInput) => {
-    setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const newGoal: Goal = {
-        id: generateId(),
-        userId: 'user1',
-        ...goalData,
-        color: 'blue',
-        archived: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      setGoals(prev => [...prev, newGoal]);
-      setCreateGoalOpened(false);
+      await createGoal(goalData);
+      setQuickCreateExpanded(false);
     } catch (error) {
       console.error('Failed to create goal:', error);
-    } finally {
-      setLoading(false);
+      // Error is already handled in the hook with notifications
     }
   };
 
   const handleEditGoal = (goal: Goal) => {
     console.log('Edit goal:', goal);
-    // TODO: Implement edit functionality
+    // TODO: Implement edit modal/form
   };
 
-  const handleDeleteGoal = (goalId: string) => {
-    console.log('Delete goal:', goalId);
+  const handleDeleteGoal = async (goalId: string) => {
+    try {
+      await deleteGoal(goalId);
+    } catch (error) {
+      console.error('Failed to delete goal:', error);
+      // Error is already handled in the hook with notifications
+    }
     // TODO: Implement delete functionality with confirmation
   };
 
@@ -216,21 +88,58 @@ export function Goals() {
   };
 
   return (
-    <Container size="xl" py="md">
-      <Stack gap="xl">
+    <Box p="md" style={{ width: '100%', maxWidth: 'none', minWidth: '100%' }}>
+      <Stack gap="lg" style={{ width: '100%', minWidth: '100%' }}>
         {/* Header */}
-        <Box>
-          <Title order={1} size="h2" fw={700} mb="xs">
-            My Active Goals
-          </Title>
-          <Text size="md" style={{ color: 'var(--mantine-color-gray-6)' }}>
-            Track your objectives and make consistent progress towards what
-            matters most.
-          </Text>
-        </Box>
+        <Group justify="space-between" align="flex-start">
+          <Box>
+            <Title order={1} size="h2" fw={700} mb="xs">
+              My Active Goals
+            </Title>
+            <Text size="md" style={{ color: 'var(--mantine-color-gray-6)' }}>
+              Track your objectives and make consistent progress towards what
+              matters most.
+            </Text>
+          </Box>
+
+          {/* Refresh Button */}
+          <Button
+            variant="light"
+            leftSection={loading ? <Loader size={16} /> : undefined}
+            onClick={refreshGoals}
+            disabled={loading}
+          >
+            {loading ? 'Loading...' : 'Refresh'}
+          </Button>
+        </Group>
+
+        {/* Error Display */}
+        {error && (
+          <Paper
+            p="md"
+            style={{
+              backgroundColor: 'var(--mantine-color-red-0)',
+              border: '1px solid var(--mantine-color-red-3)',
+            }}
+          >
+            <Group>
+              <Text size="sm" style={{ color: 'var(--mantine-color-red-6)' }}>
+                Error loading goals: {error}
+              </Text>
+              <Button
+                size="xs"
+                variant="light"
+                style={{ color: 'var(--mantine-color-red-6)' }}
+                onClick={refreshGoals}
+              >
+                Retry
+              </Button>
+            </Group>
+          </Paper>
+        )}
 
         {/* Quick Create Goal Form */}
-        <Paper shadow="sm" radius="md" withBorder>
+        <Paper shadow="sm" radius="md" withBorder style={{ width: '100%' }}>
           <Box
             p="md"
             style={{
@@ -250,25 +159,25 @@ export function Goals() {
             <Group justify="space-between" align="center">
               <Group gap="xs">
                 <IconTarget
-                  size={20}
+                  size={16}
                   style={{ color: 'var(--mantine-color-blue-6)' }}
                 />
-                <Title order={3} size="h4" fw={600}>
+                <Title order={4} size="h5" fw={600}>
                   Quick Create Goal
                 </Title>
               </Group>
               <ActionIcon
                 variant="subtle"
-                size="lg"
+                size="md"
                 style={{
                   color: 'var(--mantine-color-gray-6)',
                   pointerEvents: 'none', // Prevent double click handling
                 }}
               >
                 {quickCreateExpanded ? (
-                  <IconChevronUp size={18} stroke={1.5} />
+                  <IconChevronUp size={16} stroke={1.5} />
                 ) : (
-                  <IconChevronDown size={18} stroke={1.5} />
+                  <IconChevronDown size={16} stroke={1.5} />
                 )}
               </ActionIcon>
             </Group>
@@ -377,12 +286,12 @@ export function Goals() {
         </Paper>
 
         {/* Category Filter Tabs */}
-        <Box>
+        <Box style={{ width: '100%' }}>
           <Tabs
             value={activeFilter}
             onChange={value => setActiveFilter(value || 'all')}
           >
-            <Tabs.List>
+            <Tabs.List style={{ width: '100%' }}>
               {categoryFilters.map(filter => (
                 <Tabs.Tab
                   key={filter.value}
@@ -401,7 +310,9 @@ export function Goals() {
                     >
                       {
                         goals.filter(
-                          g => !g.archived && g.category === filter.value
+                          g =>
+                            !(g.archived ?? false) &&
+                            g.category === filter.value
                         ).length
                       }
                     </Badge>
@@ -413,47 +324,58 @@ export function Goals() {
         </Box>
 
         {/* Goals Grid */}
-        {filteredGoals.length > 0 ? (
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} spacing="md">
-            {filteredGoals.map(goal => {
-              const taskCount = mockTaskCounts[
-                goal.id as keyof typeof mockTaskCounts
-              ] || { total: 0, completed: 0 };
-              return (
-                <GoalCard
-                  key={goal.id}
-                  goal={goal}
-                  taskCount={taskCount.total}
-                  completedTaskCount={taskCount.completed}
-                  onEdit={handleEditGoal}
-                  onDelete={handleDeleteGoal}
-                  onArchive={handleArchiveGoal}
-                />
-              );
-            })}
-          </SimpleGrid>
-        ) : (
-          <Center py="xl">
+        {loading && goals.length === 0 ? (
+          <Center style={{ minHeight: '40vh', padding: '2rem 0' }}>
             <Stack align="center" gap="md">
-              <IconTarget size={48} color="var(--mantine-color-gray-4)" />
+              <Loader size="lg" />
               <Text
-                size="lg"
+                size="md"
                 fw={500}
                 style={{ color: 'var(--mantine-color-gray-6)' }}
               >
-                No goals found
+                Loading your goals...
               </Text>
-              <Text
-                size="sm"
-                style={{ color: 'var(--mantine-color-gray-6)' }}
-                ta="center"
-              >
-                {activeFilter === 'all'
-                  ? 'Get started by creating your first goal!'
-                  : `No goals in the ${activeFilter} category yet.`}
-              </Text>
+            </Stack>
+          </Center>
+        ) : filteredGoals.length > 0 ? (
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }} spacing="md">
+            {filteredGoals.map(goal => (
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                taskCount={0} // TODO: Get real task count from API
+                completedTaskCount={0} // TODO: Get real completed task count from API
+                onEdit={handleEditGoal}
+                onDelete={handleDeleteGoal}
+                onArchive={handleArchiveGoal}
+              />
+            ))}
+          </SimpleGrid>
+        ) : (
+          <Center style={{ minHeight: '40vh', padding: '2rem 0' }}>
+            <Stack align="center" gap="md">
+              <IconTarget size={48} color="var(--mantine-color-gray-4)" />
+              <div style={{ textAlign: 'center' }}>
+                <Text
+                  size="lg"
+                  fw={600}
+                  style={{ color: 'var(--mantine-color-gray-7)' }}
+                  mb="sm"
+                >
+                  No goals found
+                </Text>
+                <Text
+                  size="sm"
+                  style={{ color: 'var(--mantine-color-gray-6)' }}
+                  mb="md"
+                >
+                  {activeFilter === 'all'
+                    ? 'Get started by creating your first goal!'
+                    : `No goals in the ${activeFilter} category yet.`}
+                </Text>
+              </div>
               <Button
-                variant="light"
+                size="md"
                 leftSection={<IconPlus size={16} />}
                 onClick={() => setQuickCreateExpanded(true)}
               >
@@ -463,6 +385,6 @@ export function Goals() {
           </Center>
         )}
       </Stack>
-    </Container>
+    </Box>
   );
 }
