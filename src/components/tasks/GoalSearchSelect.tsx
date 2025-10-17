@@ -1,4 +1,3 @@
-import { useGoals } from '@/hooks/useGoals';
 import { useGoalSearch } from '@/hooks/useGoalSearch';
 import type { Goal } from '@/types';
 import { Select } from '@mantine/core';
@@ -15,36 +14,18 @@ export function GoalSearchSelect({
   onChange,
   disabled,
 }: GoalSearchSelectProps) {
-  const { goals, loading: goalsLoading } = useGoals();
   const { searchGoals, loading: searchLoading } = useGoalSearch();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Goal[]>([]);
-  const [hasSearched, setHasSearched] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Memoize the options to prevent unnecessary re-renders
   const allOptions = useMemo(() => {
-    if (hasSearched && searchResults.length > 0) {
-      // Combine search results with all goals (remove duplicates)
-      const combinedGoals = [
-        ...goals,
-        ...searchResults.filter(
-          result => !goals.some(goal => goal.id === result.id)
-        ),
-      ];
-
-      return combinedGoals.map(goal => ({
-        value: goal.id,
-        label: goal.title,
-      }));
-    }
-
-    // Return all goals when no search has been performed
-    return goals.map(goal => ({
+    return searchResults.map(goal => ({
       value: goal.id,
       label: goal.title,
     }));
-  }, [goals, searchResults, hasSearched]);
+  }, [searchResults]);
 
   // Handle search with debouncing - only search when user types
   const handleSearch = useCallback(
@@ -59,28 +40,26 @@ export function GoalSearchSelect({
       if (!query || query.length < 2) {
         // Reset search results when query is cleared
         setSearchResults([]);
-        setHasSearched(false);
         return;
       }
 
-      // Debounce search by 500ms
+      // Debounce search by 300ms
       searchTimeoutRef.current = setTimeout(async () => {
         try {
-          setHasSearched(true);
           const results = await searchGoals(query);
           setSearchResults(results);
         } catch (error) {
           console.error('Search failed:', error);
           setSearchResults([]);
         }
-      }, 500);
+      }, 300);
     },
     [searchGoals]
   );
 
-  // Handle dropdown open - load initial goals if not already loaded
+  // Load initial goals when dropdown opens
   const handleDropdownOpen = useCallback(() => {
-    // This will trigger the useGoals hook to load goals if not already loaded
+    // Intentionally empty - user must type to search
   }, []);
 
   // Cleanup timeout on unmount
@@ -95,11 +74,11 @@ export function GoalSearchSelect({
   return (
     <Select
       label="Goal (Optional)"
-      placeholder="Click to see goals or type to search..."
+      placeholder="Type to search for a goal (min 2 characters)..."
       data={allOptions}
       searchable
       clearable
-      disabled={disabled || goalsLoading}
+      disabled={disabled}
       withinPortal
       zIndex={9999}
       dropdownOpened={undefined}

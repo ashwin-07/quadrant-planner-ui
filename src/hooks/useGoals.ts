@@ -75,7 +75,8 @@ export function useGoals(options: UseGoalsOptions = {}): UseGoalsReturn {
     if (autoFetch && user?.id) {
       fetchGoals();
     }
-  }, [fetchGoals, autoFetch, user?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFetch, user?.id, category, archived]);
 
   // Create a new goal
   const createGoal = useCallback(

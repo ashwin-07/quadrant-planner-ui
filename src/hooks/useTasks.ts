@@ -110,10 +110,7 @@ export function useTasks(): UseTasksReturn {
       if (!user) return;
 
       try {
-        const response = await TasksApiService.updateTask(taskId, {
-          ...taskData,
-          userId: user.id,
-        });
+        const response = await TasksApiService.updateTask(taskId, taskData);
 
         setTasks(prev =>
           prev.map(task => (task.id === taskId ? response.task : task))
@@ -220,7 +217,25 @@ export function useTasks(): UseTasksReturn {
     ) => {
       if (!user) return;
 
+      // Store the previous state for rollback on error
+      const previousTasks = tasks;
+
+      // Optimistically update the UI first
+      setTasks(prev =>
+        prev.map(task =>
+          task.id === taskId
+            ? {
+                ...task,
+                quadrant,
+                position: position ?? task.position,
+                isStaged: isStaged !== undefined ? isStaged : task.isStaged,
+              }
+            : task
+        )
+      );
+
       try {
+        // Make the API call
         const response = await TasksApiService.moveTask(taskId, {
           userId: user.id,
           quadrant,
@@ -228,10 +243,14 @@ export function useTasks(): UseTasksReturn {
           isStaged,
         });
 
+        // Update with the actual response from the server
         setTasks(prev =>
           prev.map(task => (task.id === taskId ? response.task : task))
         );
       } catch (err) {
+        // Rollback to previous state on error
+        setTasks(previousTasks);
+
         const errorMessage =
           err instanceof Error ? err.message : 'Failed to move task';
         notifications.show({
@@ -242,7 +261,7 @@ export function useTasks(): UseTasksReturn {
         throw err;
       }
     },
-    [user]
+    [user, tasks]
   );
 
   // Bulk update tasks (for drag & drop multiple)
@@ -284,10 +303,10 @@ export function useTasks(): UseTasksReturn {
     await fetchTasks();
   }, [fetchTasks]);
 
-  // Get tasks by quadrant
+  // Get tasks by quadrant (excluding staged tasks)
   const getTasksByQuadrant = useCallback(
     (quadrant: TaskQuadrant) => {
-      return tasks.filter(task => task.quadrant === quadrant);
+      return tasks.filter(task => task.quadrant === quadrant && !task.isStaged);
     },
     [tasks]
   );

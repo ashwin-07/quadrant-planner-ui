@@ -36,7 +36,7 @@ export function OverlayModal({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: 'rgba(0,0,0,0.35)',
-        zIndex: 1000,
+        zIndex: 9000,
       }}
       onClick={onClose}
     >
@@ -52,7 +52,7 @@ export function OverlayModal({
           overflow: 'auto',
           background: 'var(--mantine-color-body)',
           position: 'relative',
-          zIndex: 1001,
+          zIndex: 9001,
         }}
         onClick={e => e.stopPropagation()}
       >

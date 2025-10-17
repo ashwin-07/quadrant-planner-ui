@@ -5,12 +5,24 @@ import { useTasks } from '@/hooks/useTasks';
 import type { CreateTaskInput, QuadrantType, Task } from '@/types';
 import type { DropResult } from '@hello-pangea/dnd';
 import { DragDropContext } from '@hello-pangea/dnd';
-import { Container, Grid, Loader, Stack, Text } from '@mantine/core';
+import {
+  ActionIcon,
+  Container,
+  Grid,
+  Loader,
+  Menu,
+  Stack,
+  Switch,
+  Text,
+} from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
   IconAlertTriangle,
   IconBolt,
   IconClock,
+  IconDotsVertical,
+  IconEye,
+  IconEyeOff,
   IconTrash,
 } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -32,14 +44,26 @@ export function Board() {
   const [selectedQuadrant, setSelectedQuadrant] =
     useState<QuadrantType>('staging');
   const [editingTask, setEditingTask] = useState<Task | undefined>();
+  const [showStagingZone, setShowStagingZone] = useState(true);
+  const [showCompletedTasks, setShowCompletedTasks] = useState(true);
 
   // Group tasks by quadrant
   const tasksByQuadrant = {
-    staging: getStagingTasks(),
-    Q1: getTasksByQuadrant('Q1'),
-    Q2: getTasksByQuadrant('Q2'),
-    Q3: getTasksByQuadrant('Q3'),
-    Q4: getTasksByQuadrant('Q4'),
+    staging: getStagingTasks().filter(
+      task => showCompletedTasks || !task.completed
+    ),
+    Q1: getTasksByQuadrant('Q1').filter(
+      task => showCompletedTasks || !task.completed
+    ),
+    Q2: getTasksByQuadrant('Q2').filter(
+      task => showCompletedTasks || !task.completed
+    ),
+    Q3: getTasksByQuadrant('Q3').filter(
+      task => showCompletedTasks || !task.completed
+    ),
+    Q4: getTasksByQuadrant('Q4').filter(
+      task => showCompletedTasks || !task.completed
+    ),
   };
 
   const handleDragEnd = async (result: DropResult) => {
@@ -47,18 +71,26 @@ export function Board() {
 
     const { source, destination, draggableId } = result;
     const newQuadrant = destination.droppableId as QuadrantType;
+    const isMovingToStaging = newQuadrant === 'staging';
+    const isMovingFromStaging = source.droppableId === 'staging';
 
     try {
       if (source.droppableId === destination.droppableId) {
         // Reordering within the same quadrant
-        await moveTask(draggableId, newQuadrant, destination.index);
-      } else {
-        // Moving between quadrants
         await moveTask(
           draggableId,
           newQuadrant,
           destination.index,
-          newQuadrant === 'staging'
+          isMovingToStaging ? true : undefined
+        );
+      } else {
+        // Moving between quadrants
+        // Explicitly set isStaged based on destination
+        await moveTask(
+          draggableId,
+          newQuadrant,
+          destination.index,
+          isMovingToStaging ? true : isMovingFromStaging ? false : undefined
         );
       }
 
@@ -147,15 +179,79 @@ export function Board() {
   return (
     <Container size="xl" py="md">
       <Stack gap="xl">
+        {/* View Controls Menu */}
+        <Menu shadow="md" width={250} position="bottom-start">
+          <Menu.Target>
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              aria-label="View options"
+              style={{ alignSelf: 'flex-start' }}
+            >
+              <IconDotsVertical size={20} />
+            </ActionIcon>
+          </Menu.Target>
+
+          <Menu.Dropdown>
+            <Menu.Label>View Options</Menu.Label>
+            <Menu.Item
+              closeMenuOnClick={false}
+              leftSection={
+                showStagingZone ? (
+                  <IconEye size={16} />
+                ) : (
+                  <IconEyeOff size={16} />
+                )
+              }
+            >
+              <Switch
+                label="Show Staging Zone"
+                checked={showStagingZone}
+                onChange={event =>
+                  setShowStagingZone(event.currentTarget.checked)
+                }
+                styles={{
+                  root: { width: '100%' },
+                  body: { width: '100%', justifyContent: 'space-between' },
+                }}
+              />
+            </Menu.Item>
+            <Menu.Item
+              closeMenuOnClick={false}
+              leftSection={
+                showCompletedTasks ? (
+                  <IconEye size={16} />
+                ) : (
+                  <IconEyeOff size={16} />
+                )
+              }
+            >
+              <Switch
+                label="Show Completed Tasks"
+                checked={showCompletedTasks}
+                onChange={event =>
+                  setShowCompletedTasks(event.currentTarget.checked)
+                }
+                styles={{
+                  root: { width: '100%' },
+                  body: { width: '100%', justifyContent: 'space-between' },
+                }}
+              />
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+
         <DragDropContext onDragEnd={handleDragEnd}>
           {/* Staging Zone */}
-          <StagingZone
-            tasks={tasksByQuadrant.staging}
-            onAddTask={() => handleAddTask('staging')}
-            onToggleComplete={handleToggleComplete}
-            onEditTask={handleEditTask}
-            onDeleteTask={handleDeleteTask}
-          />
+          {showStagingZone && (
+            <StagingZone
+              tasks={tasksByQuadrant.staging}
+              onAddTask={() => handleAddTask('staging')}
+              onToggleComplete={handleToggleComplete}
+              onEditTask={handleEditTask}
+              onDeleteTask={handleDeleteTask}
+            />
+          )}
 
           {/* Quadrants Grid */}
           <Grid gutter="md">

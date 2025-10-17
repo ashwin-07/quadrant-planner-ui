@@ -13,7 +13,7 @@ import {
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
-import { GoalSearchSelect } from './GoalSearchSelect';
+import { useEffect } from 'react';
 
 interface TaskFormProps {
   opened: boolean;
@@ -79,11 +79,50 @@ export function TaskForm({
     },
   });
 
+  // Update form values when task changes (for editing)
+  useEffect(() => {
+    if (opened && task) {
+      form.setValues({
+        title: task.title || '',
+        description: task.description || '',
+        quadrant: task.quadrant || defaultQuadrant,
+        priority: task.priority || 'medium',
+        dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+        estimatedMinutes: task.estimatedMinutes || undefined,
+        tags: task.tags || [],
+        goalId: task.goalId || undefined,
+      });
+    } else if (opened && !task) {
+      // Reset form for new task
+      form.setValues({
+        title: '',
+        description: '',
+        quadrant: defaultQuadrant,
+        priority: 'medium',
+        dueDate: undefined,
+        estimatedMinutes: undefined,
+        tags: [],
+        goalId: undefined,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opened, task, defaultQuadrant]);
+
   const handleSubmit = (values: CreateTaskInput & { dueDate?: Date }) => {
-    // Convert Date object to ISO string for API
+    // Convert Date object to ISO string for API and only include valid fields
     const taskData: CreateTaskInput = {
-      ...values,
-      dueDate: values.dueDate ? values.dueDate.toISOString() : undefined,
+      title: values.title,
+      description: values.description,
+      quadrant: values.quadrant,
+      priority: values.priority,
+      dueDate: values.dueDate
+        ? values.dueDate instanceof Date
+          ? values.dueDate.toISOString()
+          : values.dueDate
+        : undefined,
+      estimatedMinutes: values.estimatedMinutes,
+      tags: values.tags,
+      goalId: values.goalId,
     };
     onSubmit(taskData);
 
@@ -128,11 +167,10 @@ export function TaskForm({
               label="Quadrant"
               placeholder="Select quadrant"
               data={quadrantOptions}
-              searchable
               required
               withinPortal
-              zIndex={9999}
-              dropdownOpened={undefined}
+              zIndex={10000}
+              comboboxProps={{ zIndex: 10000 }}
               {...form.getInputProps('quadrant')}
             />
 
@@ -140,20 +178,20 @@ export function TaskForm({
               label="Priority"
               placeholder="Select priority"
               data={priorityOptions}
-              searchable
               required
               withinPortal
-              zIndex={9999}
-              dropdownOpened={undefined}
+              zIndex={10000}
+              comboboxProps={{ zIndex: 10000 }}
               {...form.getInputProps('priority')}
             />
           </Group>
 
-          <GoalSearchSelect
+          {/* Temporarily disabled goal search to fix infinite loop */}
+          {/* <GoalSearchSelect
             value={form.values.goalId}
             onChange={value => form.setFieldValue('goalId', value)}
             disabled={loading}
-          />
+          /> */}
 
           <Group grow>
             <DateInput
@@ -161,8 +199,8 @@ export function TaskForm({
               placeholder="Select due date"
               clearable
               withinPortal
-              zIndex={9999}
-              dropdownOpened={undefined}
+              zIndex={10000}
+              popoverProps={{ zIndex: 10000 }}
               {...form.getInputProps('dueDate')}
             />
 
