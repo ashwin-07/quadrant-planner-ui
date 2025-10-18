@@ -79,7 +79,7 @@ export function TaskForm({
     },
   });
 
-  // Update form values when task changes (for editing)
+  // Update form values when task changes (for editing) or when modal opens/closes
   useEffect(() => {
     if (opened && task) {
       // Parse the date string to a Date object for the DateInput component
@@ -119,6 +119,9 @@ export function TaskForm({
         tags: [],
         goalId: undefined,
       });
+    } else if (!opened) {
+      // Reset form when modal closes
+      form.reset();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened, task, defaultQuadrant]);
@@ -140,19 +143,7 @@ export function TaskForm({
       goalId: values.goalId,
     };
     onSubmit(taskData);
-
-    // Reset form to initial values (including defaultQuadrant for new tasks)
-    form.setValues({
-      title: '',
-      description: '',
-      quadrant: defaultQuadrant,
-      priority: 'medium',
-      dueDate: undefined,
-      estimatedMinutes: undefined,
-      tags: [],
-      goalId: undefined,
-    });
-    onClose();
+    // Note: Don't close modal or reset form here - parent will handle it after API success
   };
 
   return (
@@ -242,7 +233,7 @@ export function TaskForm({
           </Text>
 
           <Group justify="flex-end" mt="md">
-            <Button variant="subtle" onClick={onClose}>
+            <Button variant="subtle" onClick={onClose} disabled={loading}>
               Cancel
             </Button>
             <Button type="submit" loading={loading}>

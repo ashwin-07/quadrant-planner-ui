@@ -44,6 +44,7 @@ export function Board() {
   const [selectedQuadrant, setSelectedQuadrant] =
     useState<QuadrantType>('staging');
   const [editingTask, setEditingTask] = useState<Task | undefined>();
+  const [isSubmittingTask, setIsSubmittingTask] = useState(false);
 
   // Load preferences from localStorage
   const [showStagingZone, setShowStagingZone] = useState(() => {
@@ -196,7 +197,7 @@ export function Board() {
       notifications.show({
         title: 'Task moved',
         message: `Task moved to ${newQuadrant === 'staging' ? 'Staging Zone' : newQuadrant}`,
-        color: 'blue',
+        color: 'blue-quadrant',
       });
     } catch (error) {
       // Error handling is done in the hook
@@ -216,6 +217,7 @@ export function Board() {
   };
 
   const handleCreateTask = async (taskData: CreateTaskInput) => {
+    setIsSubmittingTask(true);
     try {
       if (editingTask) {
         await updateTask(editingTask.id, taskData);
@@ -223,11 +225,14 @@ export function Board() {
         await createTask(taskData);
       }
 
+      // Only close the modal after successful API response
       setTaskFormOpened(false);
       setEditingTask(undefined);
     } catch (error) {
       // Error handling is done in the hook
       console.error('Failed to save task:', error);
+    } finally {
+      setIsSubmittingTask(false);
     }
   };
 
@@ -283,7 +288,7 @@ export function Board() {
           <ActionIcon
             variant="filled"
             size="lg"
-            color="gray"
+            color="gray-quadrant"
             aria-label="View options"
             style={{
               position: 'absolute',
@@ -408,6 +413,7 @@ export function Board() {
             setEditingTask(undefined);
           }}
           onSubmit={handleCreateTask}
+          loading={isSubmittingTask}
           task={editingTask}
           defaultQuadrant={selectedQuadrant}
         />
