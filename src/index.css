@@ -72,3 +72,21 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Linkify styles for task cards */
+.task-link {
+  color: var(--mantine-color-blue-6);
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.task-link:hover {
+  color: var(--mantine-color-blue-7);
+  text-decoration: underline;
+}
+
+/* Prevent link clicks from triggering card drag */
+.task-link:active {
+  pointer-events: auto;
+}

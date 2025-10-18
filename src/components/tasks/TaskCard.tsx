@@ -17,6 +17,7 @@ import {
   IconGripVertical,
   IconTrash,
 } from '@tabler/icons-react';
+import Linkify from 'linkify-react';
 import { forwardRef } from 'react';
 
 interface TaskCardProps {
@@ -132,7 +133,15 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
           {/* Description */}
           {task.description && (
             <Text size="xs" c="dimmed" lineClamp={2}>
-              {task.description}
+              <Linkify
+                options={{
+                  target: '_blank',
+                  rel: 'noopener noreferrer',
+                  className: 'task-link',
+                }}
+              >
+                {task.description}
+              </Linkify>
             </Text>
           )}
 
@@ -140,12 +149,13 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
           {totalSubtasks > 0 && (
             <Stack gap={4}>
               {task.subtasks.map(subtask => (
-                <Group key={subtask.id} gap="xs">
+                <Group key={subtask.id} gap="xs" align="flex-start">
                   <Checkbox
                     size="xs"
                     checked={subtask.completed}
                     onChange={() => onToggleSubtask?.(task.id, subtask.id)}
                     disabled={!onToggleSubtask}
+                    style={{ marginTop: '2px' }}
                   />
                   <Text
                     size="xs"
@@ -156,9 +166,19 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
                       color: subtask.completed
                         ? 'var(--mantine-color-gray-5)'
                         : 'var(--mantine-color-gray-7)',
+                      flex: 1,
+                      wordBreak: 'break-word',
                     }}
                   >
-                    {subtask.title}
+                    <Linkify
+                      options={{
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                        className: 'task-link',
+                      }}
+                    >
+                      {subtask.title}
+                    </Linkify>
                   </Text>
                 </Group>
               ))}
