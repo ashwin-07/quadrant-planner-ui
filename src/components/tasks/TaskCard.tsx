@@ -24,6 +24,7 @@ interface TaskCardProps {
   onToggleComplete: (taskId: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (taskId: string) => void;
+  onToggleSubtask?: (taskId: string, subtaskId: string) => void;
   isDragging?: boolean;
   quadrantColor?: string;
 }
@@ -35,6 +36,7 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
       onToggleComplete,
       onEdit,
       onDelete,
+      onToggleSubtask,
       isDragging,
       quadrantColor,
       ...props
@@ -45,6 +47,8 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
     //   task.goalId ? 'career' : 'personal'
     // ] // Default fallback
     const dueDateStatus = task.dueDate ? getDueDateStatus(task.dueDate) : null;
+    const completedSubtasks = task.subtasks.filter(st => st.completed).length;
+    const totalSubtasks = task.subtasks.length;
 
     return (
       <Card
@@ -130,6 +134,38 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
             <Text size="xs" c="dimmed" lineClamp={2}>
               {task.description}
             </Text>
+          )}
+
+          {/* Subtasks */}
+          {totalSubtasks > 0 && (
+            <Stack gap={4}>
+              {task.subtasks.map(subtask => (
+                <Group key={subtask.id} gap="xs">
+                  <Checkbox
+                    size="xs"
+                    checked={subtask.completed}
+                    onChange={() => onToggleSubtask?.(task.id, subtask.id)}
+                    disabled={!onToggleSubtask}
+                  />
+                  <Text
+                    size="xs"
+                    style={{
+                      textDecoration: subtask.completed
+                        ? 'line-through'
+                        : 'none',
+                      color: subtask.completed
+                        ? 'var(--mantine-color-gray-5)'
+                        : 'var(--mantine-color-gray-7)',
+                    }}
+                  >
+                    {subtask.title}
+                  </Text>
+                </Group>
+              ))}
+              <Text size="xs" style={{ color: 'var(--mantine-color-gray-6)' }}>
+                {completedSubtasks}/{totalSubtasks} completed
+              </Text>
+            </Stack>
           )}
 
           {/* Footer with metadata */}

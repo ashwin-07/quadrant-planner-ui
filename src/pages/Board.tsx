@@ -35,6 +35,7 @@ export function Board() {
     updateTask,
     deleteTask,
     toggleTaskCompletion,
+    toggleSubtask,
     moveTask,
     getTasksByQuadrant,
     getStagingTasks,
@@ -245,6 +246,15 @@ export function Board() {
     }
   };
 
+  const handleToggleSubtask = async (taskId: string, subtaskId: string) => {
+    try {
+      await toggleSubtask(taskId, subtaskId);
+    } catch (error) {
+      // Error handling is done in the hook
+      console.error('Failed to toggle subtask:', error);
+    }
+  };
+
   const handleDeleteTask = async (taskId: string) => {
     try {
       await deleteTask(taskId);
@@ -339,6 +349,7 @@ export function Board() {
               tasks={tasksByQuadrant.staging}
               onAddTask={() => handleAddTask('staging')}
               onToggleComplete={handleToggleComplete}
+              onToggleSubtask={handleToggleSubtask}
               onEditTask={handleEditTask}
               onDeleteTask={handleDeleteTask}
             />
@@ -356,6 +367,7 @@ export function Board() {
                 tasks={tasksByQuadrant.Q1}
                 onAddTask={handleAddTask}
                 onToggleComplete={handleToggleComplete}
+                onToggleSubtask={handleToggleSubtask}
                 onEditTask={handleEditTask}
                 onDeleteTask={handleDeleteTask}
               />
@@ -370,6 +382,7 @@ export function Board() {
                 tasks={tasksByQuadrant.Q2}
                 onAddTask={handleAddTask}
                 onToggleComplete={handleToggleComplete}
+                onToggleSubtask={handleToggleSubtask}
                 onEditTask={handleEditTask}
                 onDeleteTask={handleDeleteTask}
               />
@@ -384,6 +397,7 @@ export function Board() {
                 tasks={tasksByQuadrant.Q3}
                 onAddTask={handleAddTask}
                 onToggleComplete={handleToggleComplete}
+                onToggleSubtask={handleToggleSubtask}
                 onEditTask={handleEditTask}
                 onDeleteTask={handleDeleteTask}
               />
@@ -398,6 +412,7 @@ export function Board() {
                 tasks={tasksByQuadrant.Q4}
                 onAddTask={handleAddTask}
                 onToggleComplete={handleToggleComplete}
+                onToggleSubtask={handleToggleSubtask}
                 onEditTask={handleEditTask}
                 onDeleteTask={handleDeleteTask}
               />

@@ -169,18 +169,30 @@ export function useTasks(): UseTasksReturn {
     async (taskId: string) => {
       if (!user) return;
 
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) throw new Error('Task not found');
+
+      // Store previous state for rollback
+      const previousTasks = tasks;
+
       try {
-        const task = tasks.find(t => t.id === taskId);
-        if (!task) throw new Error('Task not found');
-
-        const response = await TasksApiService.toggleTaskCompletion(
-          taskId,
-          !task.completed
-        );
-
+        // Optimistically update UI immediately
         setTasks(prev =>
-          prev.map(task => (task.id === taskId ? response.task : task))
+          prev.map(t =>
+            t.id === taskId
+              ? {
+                  ...t,
+                  completed: !t.completed,
+                  completedAt: !t.completed
+                    ? new Date().toISOString()
+                    : undefined,
+                }
+              : t
+          )
         );
+
+        // Call API in the background
+        await TasksApiService.toggleTaskCompletion(taskId, !task.completed);
 
         const action = task.completed
           ? 'marked as incomplete'
@@ -192,6 +204,9 @@ export function useTasks(): UseTasksReturn {
           color: 'green-quadrant',
         });
       } catch (err) {
+        // Revert optimistic update on error
+        setTasks(previousTasks);
+
         const errorMessage =
           err instanceof Error
             ? err.message
@@ -298,6 +313,49 @@ export function useTasks(): UseTasksReturn {
     [user, fetchTasks]
   );
 
+  // Toggle subtask completion status
+  const toggleSubtask = useCallback(
+    async (taskId: string, subtaskId: string) => {
+      if (!user) return;
+
+      // Store the previous state for potential rollback
+      const previousTasks = tasks;
+
+      try {
+        // Optimistically update UI
+        setTasks(prev =>
+          prev.map(task => {
+            if (task.id === taskId) {
+              return {
+                ...task,
+                subtasks: task.subtasks.map(st =>
+                  st.id === subtaskId ? { ...st, completed: !st.completed } : st
+                ),
+              };
+            }
+            return task;
+          })
+        );
+
+        // Call API - no need to refetch all tasks, the optimistic update is sufficient
+        await TasksApiService.toggleSubtaskCompletion(taskId, subtaskId);
+      } catch (err) {
+        // Revert optimistic update on error
+        setTasks(previousTasks);
+
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to toggle subtask';
+        notifications.show({
+          title: 'Error',
+          message: errorMessage,
+          color: 'red-quadrant',
+        });
+        throw err;
+      }
+    },
+    [user, tasks]
+  );
+
   // Refresh tasks
   const refreshTasks = useCallback(async () => {
     await fetchTasks();
@@ -334,6 +392,7 @@ export function useTasks(): UseTasksReturn {
     updateTask,
     deleteTask,
     toggleTaskCompletion,
+    toggleSubtask,
     moveTask,
     bulkUpdateTasks,
 

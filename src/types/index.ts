@@ -48,6 +48,26 @@ export interface Goal {
   updatedAt: string;
 }
 
+export interface Subtask {
+  id: string;
+  taskId: string;
+  title: string;
+  completed: boolean;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubtaskCreate {
+  title: string;
+}
+
+export interface SubtaskUpdate {
+  id: string;
+  title: string;
+  completed?: boolean;
+}
+
 export interface Task {
   id: string;
   userId: string;
@@ -67,6 +87,7 @@ export interface Task {
   completedAt?: string;
   createdAt: string;
   updatedAt: string;
+  subtasks: Subtask[];
   goal?: Goal;
 }
 
@@ -89,6 +110,7 @@ export interface CreateTaskInput {
   estimatedMinutes?: number;
   priority?: TaskPriority;
   tags?: string[];
+  subtasks?: (SubtaskCreate | SubtaskUpdate)[];
 }
 
 export interface UpdateTaskInput {
@@ -103,6 +125,7 @@ export interface UpdateTaskInput {
   completed?: boolean;
   isStaged?: boolean;
   position?: number;
+  subtasks?: (SubtaskCreate | SubtaskUpdate)[];
 }
 
 export interface CreateGoalInput {

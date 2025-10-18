@@ -1297,6 +1297,72 @@
         }
       }
     },
+    "/api/v1/tasks/{task_id}/subtasks/{subtask_id}/toggle": {
+      "patch": {
+        "tags": ["tasks"],
+        "summary": "Toggle Subtask",
+        "description": "Toggle subtask completion status\n\n**Authentication**: Requires JWT Bearer token in Authorization header\n\n- **task_id**: Parent task unique identifier\n- **subtask_id**: Subtask unique identifier\n\nToggles the completion status of the subtask.",
+        "operationId": "toggle_subtask_api_v1_tasks__task_id__subtasks__subtask_id__toggle_patch",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Task ID",
+              "title": "Task Id"
+            },
+            "description": "Task ID"
+          },
+          {
+            "name": "subtask_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Subtask ID",
+              "title": "Subtask Id"
+            },
+            "description": "Subtask ID"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Authorization header with Bearer token",
+              "title": "Authorization"
+            },
+            "description": "Authorization header with Bearer token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Toggle Subtask Api V1 Tasks  Task Id  Subtasks  Subtask Id  Toggle Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "summary": "Root",
@@ -1416,9 +1482,9 @@
             "title": "Id",
             "description": "Goal unique identifier"
           },
-          "user_id": {
+          "userId": {
             "type": "string",
-            "title": "User Id",
+            "title": "Userid",
             "description": "User identifier"
           },
           "archived": {
@@ -1427,28 +1493,31 @@
             "description": "Archive status",
             "default": false
           },
-          "created_at": {
+          "createdAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At",
+            "title": "Createdat",
             "description": "Creation timestamp"
           },
-          "updated_at": {
+          "updatedAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Updated At",
+            "title": "Updatedat",
             "description": "Last update timestamp"
           }
         },
         "type": "object",
         "required": [
           "title",
+          "description",
           "category",
           "timeframe",
+          "color",
           "id",
-          "user_id",
-          "created_at",
-          "updated_at"
+          "userId",
+          "archived",
+          "createdAt",
+          "updatedAt"
         ],
         "title": "Goal",
         "description": "Goal response model"
@@ -1525,36 +1594,36 @@
       },
       "GoalStats": {
         "properties": {
-          "total_tasks": {
+          "totalTasks": {
             "type": "integer",
             "minimum": 0,
-            "title": "Total Tasks",
+            "title": "Totaltasks",
             "description": "Total number of tasks",
             "default": 0
           },
-          "completed_tasks": {
+          "completedTasks": {
             "type": "integer",
             "minimum": 0,
-            "title": "Completed Tasks",
+            "title": "Completedtasks",
             "description": "Number of completed tasks",
             "default": 0
           },
-          "active_tasks": {
+          "activeTasks": {
             "type": "integer",
             "minimum": 0,
-            "title": "Active Tasks",
+            "title": "Activetasks",
             "description": "Number of active tasks",
             "default": 0
           },
-          "completion_rate": {
+          "completionRate": {
             "type": "number",
             "maximum": 100,
             "minimum": 0,
-            "title": "Completion Rate",
+            "title": "Completionrate",
             "description": "Completion rate percentage",
             "default": 0
           },
-          "average_task_age": {
+          "averageTaskAge": {
             "anyOf": [
               {
                 "type": "number",
@@ -1564,10 +1633,10 @@
                 "type": "null"
               }
             ],
-            "title": "Average Task Age",
+            "title": "Averagetaskage",
             "description": "Average age of active tasks in days"
           },
-          "last_activity_at": {
+          "lastActivityAt": {
             "anyOf": [
               {
                 "type": "string",
@@ -1577,11 +1646,19 @@
                 "type": "null"
               }
             ],
-            "title": "Last Activity At",
+            "title": "Lastactivityat",
             "description": "Last activity timestamp"
           }
         },
         "type": "object",
+        "required": [
+          "totalTasks",
+          "completedTasks",
+          "activeTasks",
+          "completionRate",
+          "averageTaskAge",
+          "lastActivityAt"
+        ],
         "title": "GoalStats",
         "description": "Goal statistics model"
       },
@@ -1593,11 +1670,11 @@
       },
       "GoalUpdate": {
         "properties": {
-          "user_id": {
+          "userId": {
             "type": "string",
             "maxLength": 255,
             "minLength": 1,
-            "title": "User Id",
+            "title": "Userid",
             "description": "User identifier"
           },
           "title": {
@@ -1676,7 +1753,7 @@
           }
         },
         "type": "object",
-        "required": ["user_id"],
+        "required": ["userId"],
         "title": "GoalUpdate",
         "description": "Goal update model - all fields optional"
       },
@@ -1736,9 +1813,9 @@
             "title": "Id",
             "description": "Goal unique identifier"
           },
-          "user_id": {
+          "userId": {
             "type": "string",
-            "title": "User Id",
+            "title": "Userid",
             "description": "User identifier"
           },
           "archived": {
@@ -1747,45 +1824,45 @@
             "description": "Archive status",
             "default": false
           },
-          "created_at": {
+          "createdAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At",
+            "title": "Createdat",
             "description": "Creation timestamp"
           },
-          "updated_at": {
+          "updatedAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Updated At",
+            "title": "Updatedat",
             "description": "Last update timestamp"
           },
-          "total_tasks": {
+          "totalTasks": {
             "type": "integer",
-            "title": "Total Tasks",
+            "title": "Totaltasks",
             "description": "Total number of tasks",
             "default": 0
           },
-          "completed_tasks": {
+          "completedTasks": {
             "type": "integer",
-            "title": "Completed Tasks",
+            "title": "Completedtasks",
             "description": "Number of completed tasks",
             "default": 0
           },
-          "active_tasks": {
+          "activeTasks": {
             "type": "integer",
-            "title": "Active Tasks",
+            "title": "Activetasks",
             "description": "Number of active tasks",
             "default": 0
           },
-          "completion_rate": {
+          "completionRate": {
             "type": "number",
             "maximum": 100,
             "minimum": 0,
-            "title": "Completion Rate",
+            "title": "Completionrate",
             "description": "Completion rate percentage",
             "default": 0
           },
-          "average_task_age": {
+          "averageTaskAge": {
             "anyOf": [
               {
                 "type": "number"
@@ -1794,10 +1871,10 @@
                 "type": "null"
               }
             ],
-            "title": "Average Task Age",
+            "title": "Averagetaskage",
             "description": "Average age of active tasks in days"
           },
-          "last_activity_at": {
+          "lastActivityAt": {
             "anyOf": [
               {
                 "type": "string",
@@ -1807,19 +1884,28 @@
                 "type": "null"
               }
             ],
-            "title": "Last Activity At",
+            "title": "Lastactivityat",
             "description": "Last activity timestamp"
           }
         },
         "type": "object",
         "required": [
           "title",
+          "description",
           "category",
           "timeframe",
+          "color",
           "id",
-          "user_id",
-          "created_at",
-          "updated_at"
+          "userId",
+          "archived",
+          "createdAt",
+          "updatedAt",
+          "totalTasks",
+          "completedTasks",
+          "activeTasks",
+          "completionRate",
+          "averageTaskAge",
+          "lastActivityAt"
         ],
         "title": "GoalWithStats",
         "description": "Goal with statistics"
@@ -1880,9 +1966,9 @@
             "title": "Id",
             "description": "Goal unique identifier"
           },
-          "user_id": {
+          "userId": {
             "type": "string",
-            "title": "User Id",
+            "title": "Userid",
             "description": "User identifier"
           },
           "archived": {
@@ -1891,16 +1977,16 @@
             "description": "Archive status",
             "default": false
           },
-          "created_at": {
+          "createdAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At",
+            "title": "Createdat",
             "description": "Creation timestamp"
           },
-          "updated_at": {
+          "updatedAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Updated At",
+            "title": "Updatedat",
             "description": "Last update timestamp"
           },
           "tasks": {
@@ -1923,12 +2009,16 @@
         "type": "object",
         "required": [
           "title",
+          "description",
           "category",
           "timeframe",
+          "color",
           "id",
-          "user_id",
-          "created_at",
-          "updated_at",
+          "userId",
+          "archived",
+          "createdAt",
+          "updatedAt",
+          "tasks",
           "stats"
         ],
         "title": "GoalWithTasks",
@@ -1950,14 +2040,14 @@
             "title": "Total",
             "description": "Total number of goals"
           },
-          "has_more": {
+          "hasMore": {
             "type": "boolean",
-            "title": "Has More",
+            "title": "Hasmore",
             "description": "Whether there are more goals"
           }
         },
         "type": "object",
-        "required": ["goals", "total", "has_more"],
+        "required": ["goals", "total", "hasMore"],
         "title": "GoalsListResponse",
         "description": "Response model for goals list"
       },
@@ -1977,14 +2067,14 @@
             "title": "Total",
             "description": "Total number of goals"
           },
-          "has_more": {
+          "hasMore": {
             "type": "boolean",
-            "title": "Has More",
+            "title": "Hasmore",
             "description": "Whether there are more goals"
           }
         },
         "type": "object",
-        "required": ["goals", "total", "has_more"],
+        "required": ["goals", "total", "hasMore"],
         "title": "GoalsListWithStatsResponse",
         "description": "Response model for goals list with statistics"
       },
@@ -2035,25 +2125,25 @@
       },
       "StagingZoneStatus": {
         "properties": {
-          "current_count": {
+          "currentCount": {
             "type": "integer",
             "maximum": 5,
             "minimum": 0,
-            "title": "Current Count",
+            "title": "Currentcount",
             "description": "Current number of items in staging"
           },
-          "max_capacity": {
+          "maxCapacity": {
             "type": "integer",
-            "title": "Max Capacity",
+            "title": "Maxcapacity",
             "description": "Maximum staging zone capacity",
             "default": 5
           },
-          "is_full": {
+          "isFull": {
             "type": "boolean",
-            "title": "Is Full",
+            "title": "Isfull",
             "description": "Whether staging zone is at capacity"
           },
-          "oldest_item": {
+          "oldestItem": {
             "anyOf": [
               {
                 "type": "object"
@@ -2062,10 +2152,10 @@
                 "type": "null"
               }
             ],
-            "title": "Oldest Item",
+            "title": "Oldestitem",
             "description": "Information about oldest staged item"
           },
-          "processing_reminder": {
+          "processingReminder": {
             "anyOf": [
               {
                 "type": "string"
@@ -2074,14 +2164,127 @@
                 "type": "null"
               }
             ],
-            "title": "Processing Reminder",
+            "title": "Processingreminder",
             "description": "Processing reminder message"
           }
         },
         "type": "object",
-        "required": ["current_count", "is_full"],
+        "required": ["currentCount", "isFull"],
         "title": "StagingZoneStatus",
         "description": "Staging zone status model"
+      },
+      "Subtask": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Subtask title"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Subtask unique identifier"
+          },
+          "taskId": {
+            "type": "string",
+            "title": "Taskid",
+            "description": "Parent task identifier"
+          },
+          "completed": {
+            "type": "boolean",
+            "title": "Completed",
+            "description": "Completion status",
+            "default": false
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position",
+            "description": "Subtask position within task",
+            "default": 0
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat",
+            "description": "Last update timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "id",
+          "taskId",
+          "completed",
+          "position",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "Subtask",
+        "description": "Subtask response model",
+        "example": {
+          "completed": false,
+          "createdAt": "2025-10-18T10:00:00Z",
+          "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+          "position": 0,
+          "taskId": "f1e2d3c4-b5a6-9876-5432-10fedcba9876",
+          "title": "Research requirements",
+          "updatedAt": "2025-10-18T10:00:00Z"
+        }
+      },
+      "SubtaskCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Subtask title"
+          }
+        },
+        "type": "object",
+        "required": ["title"],
+        "title": "SubtaskCreate",
+        "description": "Subtask creation model (no ID - for new subtasks)"
+      },
+      "SubtaskUpdate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Subtask title"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Subtask ID for updates"
+          },
+          "completed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed",
+            "description": "Completion status"
+          }
+        },
+        "type": "object",
+        "required": ["title", "id"],
+        "title": "SubtaskUpdate",
+        "description": "Subtask update model (with ID - for existing subtasks)"
       },
       "Task": {
         "properties": {
@@ -2113,7 +2316,7 @@
             ],
             "description": "Task quadrant"
           },
-          "due_date": {
+          "dueDate": {
             "anyOf": [
               {
                 "type": "string",
@@ -2123,10 +2326,10 @@
                 "type": "null"
               }
             ],
-            "title": "Due Date",
+            "title": "Duedate",
             "description": "Task due date"
           },
-          "estimated_minutes": {
+          "estimatedMinutes": {
             "anyOf": [
               {
                 "type": "integer",
@@ -2137,7 +2340,7 @@
                 "type": "null"
               }
             ],
-            "title": "Estimated Minutes",
+            "title": "Estimatedminutes",
             "description": "Estimated completion time in minutes"
           },
           "priority": {
@@ -2163,12 +2366,12 @@
             "title": "Id",
             "description": "Task unique identifier"
           },
-          "user_id": {
+          "userId": {
             "type": "string",
-            "title": "User Id",
+            "title": "Userid",
             "description": "User identifier"
           },
-          "goal_id": {
+          "goalId": {
             "anyOf": [
               {
                 "type": "string"
@@ -2177,7 +2380,7 @@
                 "type": "null"
               }
             ],
-            "title": "Goal Id",
+            "title": "Goalid",
             "description": "Associated goal ID"
           },
           "completed": {
@@ -2186,9 +2389,9 @@
             "description": "Completion status",
             "default": false
           },
-          "is_staged": {
+          "isStaged": {
             "type": "boolean",
-            "title": "Is Staged",
+            "title": "Isstaged",
             "description": "Whether task is in staging zone",
             "default": false
           },
@@ -2198,7 +2401,7 @@
             "description": "Task position within quadrant",
             "default": 0
           },
-          "staged_at": {
+          "stagedAt": {
             "anyOf": [
               {
                 "type": "string",
@@ -2208,10 +2411,10 @@
                 "type": "null"
               }
             ],
-            "title": "Staged At",
+            "title": "Stagedat",
             "description": "When task was moved to staging"
           },
-          "organized_at": {
+          "organizedAt": {
             "anyOf": [
               {
                 "type": "string",
@@ -2221,10 +2424,10 @@
                 "type": "null"
               }
             ],
-            "title": "Organized At",
+            "title": "Organizedat",
             "description": "When task was organized from staging"
           },
-          "completed_at": {
+          "completedAt": {
             "anyOf": [
               {
                 "type": "string",
@@ -2234,33 +2437,83 @@
                 "type": "null"
               }
             ],
-            "title": "Completed At",
+            "title": "Completedat",
             "description": "When task was completed"
           },
-          "created_at": {
+          "createdAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At",
+            "title": "Createdat",
             "description": "Creation timestamp"
           },
-          "updated_at": {
+          "updatedAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Updated At",
+            "title": "Updatedat",
             "description": "Last update timestamp"
+          },
+          "subtasks": {
+            "items": {
+              "$ref": "#/components/schemas/Subtask"
+            },
+            "type": "array",
+            "title": "Subtasks",
+            "description": "Subtasks for the task"
           }
         },
         "type": "object",
         "required": [
           "title",
+          "description",
           "quadrant",
+          "dueDate",
+          "estimatedMinutes",
+          "priority",
+          "tags",
           "id",
-          "user_id",
-          "created_at",
-          "updated_at"
+          "userId",
+          "goalId",
+          "completed",
+          "isStaged",
+          "position",
+          "stagedAt",
+          "organizedAt",
+          "completedAt",
+          "createdAt",
+          "updatedAt",
+          "subtasks"
         ],
         "title": "Task",
-        "description": "Task response model"
+        "description": "Task response model",
+        "example": {
+          "completed": false,
+          "description": "Write and submit the Q4 proposal",
+          "dueDate": "2025-10-25T00:00:00Z",
+          "id": "f1e2d3c4-b5a6-9876-5432-10fedcba9876",
+          "priority": "high",
+          "quadrant": "Q1",
+          "subtasks": [
+            {
+              "completed": true,
+              "createdAt": "2025-10-18T10:00:00Z",
+              "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+              "position": 0,
+              "taskId": "f1e2d3c4-b5a6-9876-5432-10fedcba9876",
+              "title": "Research requirements",
+              "updatedAt": "2025-10-18T10:00:00Z"
+            },
+            {
+              "completed": false,
+              "createdAt": "2025-10-18T10:05:00Z",
+              "id": "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
+              "position": 1,
+              "taskId": "f1e2d3c4-b5a6-9876-5432-10fedcba9876",
+              "title": "Draft outline",
+              "updatedAt": "2025-10-18T10:05:00Z"
+            }
+          ],
+          "title": "Complete project proposal"
+        }
       },
       "TaskBulkUpdate": {
         "properties": {
@@ -2310,7 +2563,7 @@
             ],
             "description": "Task quadrant"
           },
-          "due_date": {
+          "dueDate": {
             "anyOf": [
               {
                 "type": "string",
@@ -2320,10 +2573,10 @@
                 "type": "null"
               }
             ],
-            "title": "Due Date",
+            "title": "Duedate",
             "description": "Task due date"
           },
-          "estimated_minutes": {
+          "estimatedMinutes": {
             "anyOf": [
               {
                 "type": "integer",
@@ -2334,7 +2587,7 @@
                 "type": "null"
               }
             ],
-            "title": "Estimated Minutes",
+            "title": "Estimatedminutes",
             "description": "Estimated completion time in minutes"
           },
           "priority": {
@@ -2355,7 +2608,7 @@
             "title": "Tags",
             "description": "Task tags"
           },
-          "goal_id": {
+          "goalId": {
             "anyOf": [
               {
                 "type": "string"
@@ -2364,8 +2617,31 @@
                 "type": "null"
               }
             ],
-            "title": "Goal Id",
+            "title": "Goalid",
             "description": "Associated goal ID"
+          },
+          "subtasks": {
+            "anyOf": [
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/SubtaskCreate"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SubtaskUpdate"
+                    }
+                  ]
+                },
+                "type": "array",
+                "maxItems": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtasks",
+            "description": "Subtasks for the task"
           }
         },
         "type": "object",
@@ -2390,7 +2666,7 @@
             "description": "Target position",
             "default": 0
           },
-          "is_staged": {
+          "isStaged": {
             "anyOf": [
               {
                 "type": "boolean"
@@ -2399,7 +2675,7 @@
                 "type": "null"
               }
             ],
-            "title": "Is Staged",
+            "title": "Isstaged",
             "description": "Whether task is staged"
           }
         },
@@ -2422,44 +2698,44 @@
       },
       "TaskStats": {
         "properties": {
-          "total_tasks": {
+          "totalTasks": {
             "type": "integer",
             "minimum": 0,
-            "title": "Total Tasks",
+            "title": "Totaltasks",
             "description": "Total number of tasks",
             "default": 0
           },
-          "completed_tasks": {
+          "completedTasks": {
             "type": "integer",
             "minimum": 0,
-            "title": "Completed Tasks",
+            "title": "Completedtasks",
             "description": "Number of completed tasks",
             "default": 0
           },
-          "active_tasks": {
+          "activeTasks": {
             "type": "integer",
             "minimum": 0,
-            "title": "Active Tasks",
+            "title": "Activetasks",
             "description": "Number of active tasks",
             "default": 0
           },
-          "overdue_tasks": {
+          "overdueTasks": {
             "type": "integer",
             "minimum": 0,
-            "title": "Overdue Tasks",
+            "title": "Overduetasks",
             "description": "Number of overdue tasks",
             "default": 0
           },
-          "staging_tasks": {
+          "stagingTasks": {
             "type": "integer",
             "minimum": 0,
-            "title": "Staging Tasks",
+            "title": "Stagingtasks",
             "description": "Number of tasks in staging",
             "default": 0
           },
-          "quadrant_distribution": {
+          "quadrantDistribution": {
             "type": "object",
-            "title": "Quadrant Distribution",
+            "title": "Quadrantdistribution",
             "description": "Task distribution by quadrant"
           }
         },
@@ -2530,7 +2806,7 @@
             "title": "Description",
             "description": "Task description"
           },
-          "goal_id": {
+          "goalId": {
             "anyOf": [
               {
                 "type": "string"
@@ -2539,7 +2815,7 @@
                 "type": "null"
               }
             ],
-            "title": "Goal Id",
+            "title": "Goalid",
             "description": "Associated goal ID"
           },
           "quadrant": {
@@ -2553,7 +2829,7 @@
             ],
             "description": "Task quadrant"
           },
-          "due_date": {
+          "dueDate": {
             "anyOf": [
               {
                 "type": "string",
@@ -2563,10 +2839,10 @@
                 "type": "null"
               }
             ],
-            "title": "Due Date",
+            "title": "Duedate",
             "description": "Task due date"
           },
-          "estimated_minutes": {
+          "estimatedMinutes": {
             "anyOf": [
               {
                 "type": "integer",
@@ -2577,7 +2853,7 @@
                 "type": "null"
               }
             ],
-            "title": "Estimated Minutes",
+            "title": "Estimatedminutes",
             "description": "Estimated completion time"
           },
           "priority": {
@@ -2631,6 +2907,29 @@
             ],
             "title": "Position",
             "description": "Task position within quadrant"
+          },
+          "subtasks": {
+            "anyOf": [
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/SubtaskCreate"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SubtaskUpdate"
+                    }
+                  ]
+                },
+                "type": "array",
+                "maxItems": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtasks",
+            "description": "Subtasks for the task"
           }
         },
         "type": "object",
@@ -2667,7 +2966,7 @@
             ],
             "description": "Task quadrant"
           },
-          "due_date": {
+          "dueDate": {
             "anyOf": [
               {
                 "type": "string",
@@ -2677,10 +2976,10 @@
                 "type": "null"
               }
             ],
-            "title": "Due Date",
+            "title": "Duedate",
             "description": "Task due date"
           },
-          "estimated_minutes": {
+          "estimatedMinutes": {
             "anyOf": [
               {
                 "type": "integer",
@@ -2691,7 +2990,7 @@
                 "type": "null"
               }
             ],
-            "title": "Estimated Minutes",
+            "title": "Estimatedminutes",
             "description": "Estimated completion time in minutes"
           },
           "priority": {
@@ -2717,12 +3016,12 @@
             "title": "Id",
             "description": "Task unique identifier"
           },
-          "user_id": {
+          "userId": {
             "type": "string",
-            "title": "User Id",
+            "title": "Userid",
             "description": "User identifier"
           },
-          "goal_id": {
+          "goalId": {
             "anyOf": [
               {
                 "type": "string"
@@ -2731,7 +3030,7 @@
                 "type": "null"
               }
             ],
-            "title": "Goal Id",
+            "title": "Goalid",
             "description": "Associated goal ID"
           },
           "completed": {
@@ -2740,9 +3039,9 @@
             "description": "Completion status",
             "default": false
           },
-          "is_staged": {
+          "isStaged": {
             "type": "boolean",
-            "title": "Is Staged",
+            "title": "Isstaged",
             "description": "Whether task is in staging zone",
             "default": false
           },
@@ -2752,7 +3051,7 @@
             "description": "Task position within quadrant",
             "default": 0
           },
-          "staged_at": {
+          "stagedAt": {
             "anyOf": [
               {
                 "type": "string",
@@ -2762,10 +3061,10 @@
                 "type": "null"
               }
             ],
-            "title": "Staged At",
+            "title": "Stagedat",
             "description": "When task was moved to staging"
           },
-          "organized_at": {
+          "organizedAt": {
             "anyOf": [
               {
                 "type": "string",
@@ -2775,10 +3074,10 @@
                 "type": "null"
               }
             ],
-            "title": "Organized At",
+            "title": "Organizedat",
             "description": "When task was organized from staging"
           },
-          "completed_at": {
+          "completedAt": {
             "anyOf": [
               {
                 "type": "string",
@@ -2788,20 +3087,28 @@
                 "type": "null"
               }
             ],
-            "title": "Completed At",
+            "title": "Completedat",
             "description": "When task was completed"
           },
-          "created_at": {
+          "createdAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At",
+            "title": "Createdat",
             "description": "Creation timestamp"
           },
-          "updated_at": {
+          "updatedAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Updated At",
+            "title": "Updatedat",
             "description": "Last update timestamp"
+          },
+          "subtasks": {
+            "items": {
+              "$ref": "#/components/schemas/Subtask"
+            },
+            "type": "array",
+            "title": "Subtasks",
+            "description": "Subtasks for the task"
           },
           "goal": {
             "anyOf": [
@@ -2819,14 +3126,57 @@
         "type": "object",
         "required": [
           "title",
+          "description",
           "quadrant",
+          "dueDate",
+          "estimatedMinutes",
+          "priority",
+          "tags",
           "id",
-          "user_id",
-          "created_at",
-          "updated_at"
+          "userId",
+          "goalId",
+          "completed",
+          "isStaged",
+          "position",
+          "stagedAt",
+          "organizedAt",
+          "completedAt",
+          "createdAt",
+          "updatedAt",
+          "subtasks",
+          "goal"
         ],
         "title": "TaskWithGoal",
-        "description": "Task with associated goal information"
+        "description": "Task with associated goal information",
+        "example": {
+          "completed": false,
+          "description": "Write and submit the Q4 proposal",
+          "dueDate": "2025-10-25T00:00:00Z",
+          "id": "f1e2d3c4-b5a6-9876-5432-10fedcba9876",
+          "priority": "high",
+          "quadrant": "Q1",
+          "subtasks": [
+            {
+              "completed": true,
+              "createdAt": "2025-10-18T10:00:00Z",
+              "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+              "position": 0,
+              "taskId": "f1e2d3c4-b5a6-9876-5432-10fedcba9876",
+              "title": "Research requirements",
+              "updatedAt": "2025-10-18T10:00:00Z"
+            },
+            {
+              "completed": false,
+              "createdAt": "2025-10-18T10:05:00Z",
+              "id": "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
+              "position": 1,
+              "taskId": "f1e2d3c4-b5a6-9876-5432-10fedcba9876",
+              "title": "Draft outline",
+              "updatedAt": "2025-10-18T10:05:00Z"
+            }
+          ],
+          "title": "Complete project proposal"
+        }
       },
       "TasksListResponse": {
         "properties": {
@@ -2851,16 +3201,42 @@
             "title": "Total",
             "description": "Total number of tasks"
           },
-          "has_more": {
+          "hasMore": {
             "type": "boolean",
-            "title": "Has More",
+            "title": "Hasmore",
             "description": "Whether there are more tasks"
           }
         },
         "type": "object",
-        "required": ["tasks", "total", "has_more"],
+        "required": ["tasks", "total", "hasMore"],
         "title": "TasksListResponse",
-        "description": "Response model for tasks list"
+        "description": "Response model for tasks list",
+        "example": {
+          "hasMore": false,
+          "tasks": [
+            {
+              "completed": false,
+              "description": "Write and submit the Q4 proposal",
+              "dueDate": "2025-10-25T00:00:00Z",
+              "id": "f1e2d3c4-b5a6-9876-5432-10fedcba9876",
+              "priority": "high",
+              "quadrant": "Q1",
+              "subtasks": [
+                {
+                  "completed": true,
+                  "createdAt": "2025-10-18T10:00:00Z",
+                  "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+                  "position": 0,
+                  "taskId": "f1e2d3c4-b5a6-9876-5432-10fedcba9876",
+                  "title": "Research requirements",
+                  "updatedAt": "2025-10-18T10:00:00Z"
+                }
+              ],
+              "title": "Complete project proposal"
+            }
+          ],
+          "total": 1
+        }
       },
       "ValidationError": {
         "properties": {

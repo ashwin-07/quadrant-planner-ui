@@ -1,8 +1,18 @@
 import { OverlayModal } from '@/components/common/OverlayModal';
-import type { CreateTaskInput, QuadrantType, Task } from '@/types';
+import type {
+  CreateTaskInput,
+  QuadrantType,
+  SubtaskCreate,
+  SubtaskUpdate,
+  Task,
+} from '@/types';
 import { validateTask } from '@/utils/validation';
+import type { DropResult } from '@hello-pangea/dnd';
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import {
+  ActionIcon,
   Button,
+  Divider,
   Group,
   Select,
   Stack,
@@ -13,7 +23,8 @@ import {
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
-import { useEffect } from 'react';
+import { IconGripVertical, IconPlus, IconTrash } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
 
 interface TaskFormProps {
   opened: boolean;
@@ -49,6 +60,12 @@ export function TaskForm({
   task,
   defaultQuadrant = 'staging',
 }: TaskFormProps) {
+  // Subtask state - manage subtasks separately
+  const [subtasks, setSubtasks] = useState<(SubtaskCreate | SubtaskUpdate)[]>(
+    []
+  );
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
+
   const form = useForm<CreateTaskInput & { dueDate?: Date }>({
     initialValues: {
       title: task?.title || '',
@@ -107,6 +124,15 @@ export function TaskForm({
         tags: task.tags || [],
         goalId: task.goalId || undefined,
       });
+
+      // Set subtasks for editing
+      const mappedSubtasks: SubtaskUpdate[] =
+        task.subtasks?.map(st => ({
+          id: st.id,
+          title: st.title,
+          completed: st.completed,
+        })) || [];
+      setSubtasks(mappedSubtasks);
     } else if (opened && !task) {
       // Reset form for new task
       form.setValues({
@@ -119,12 +145,49 @@ export function TaskForm({
         tags: [],
         goalId: undefined,
       });
+      setSubtasks([]);
     } else if (!opened) {
       // Reset form when modal closes
       form.reset();
+      setSubtasks([]);
+      setNewSubtaskTitle('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened, task, defaultQuadrant]);
+
+  // Subtask handlers
+  const handleAddSubtask = () => {
+    if (newSubtaskTitle.trim()) {
+      const newSubtask: SubtaskCreate = {
+        title: newSubtaskTitle.trim(),
+      };
+      setSubtasks([...subtasks, newSubtask]);
+      setNewSubtaskTitle('');
+    }
+  };
+
+  const handleRemoveSubtask = (index: number) => {
+    setSubtasks(subtasks.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateSubtaskTitle = (index: number, title: string) => {
+    const updated = [...subtasks];
+    updated[index] = {
+      ...updated[index],
+      title,
+    };
+    setSubtasks(updated);
+  };
+
+  const handleSubtaskDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+
+    const items = Array.from(subtasks);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setSubtasks(items);
+  };
 
   const handleSubmit = (values: CreateTaskInput & { dueDate?: Date }) => {
     // Convert Date object to ISO string for API and only include valid fields
@@ -141,6 +204,7 @@ export function TaskForm({
       estimatedMinutes: values.estimatedMinutes,
       tags: values.tags,
       goalId: values.goalId,
+      subtasks: subtasks.length > 0 ? subtasks : undefined,
     };
     onSubmit(taskData);
     // Note: Don't close modal or reset form here - parent will handle it after API success
@@ -218,6 +282,106 @@ export function TaskForm({
               max={480}
               {...form.getInputProps('estimatedMinutes')}
             />
+          </Group>
+
+          <Divider label="Subtasks (Optional)" labelPosition="left" />
+
+          {/* Subtasks List with Drag & Drop */}
+          {subtasks.length > 0 && (
+            <DragDropContext onDragEnd={handleSubtaskDragEnd}>
+              <Droppable droppableId="subtasks-list">
+                {provided => (
+                  <Stack
+                    gap="xs"
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                  >
+                    {subtasks.map((subtask, index) => (
+                      <Draggable
+                        key={`subtask-${index}`}
+                        draggableId={`subtask-${index}`}
+                        index={index}
+                      >
+                        {(provided, snapshot) => (
+                          <Group
+                            gap="xs"
+                            wrap="nowrap"
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            style={{
+                              ...provided.draggableProps.style,
+                              opacity: snapshot.isDragging ? 0.5 : 1,
+                            }}
+                          >
+                            <ActionIcon
+                              variant="subtle"
+                              color="gray"
+                              size="sm"
+                              style={{ cursor: 'grab' }}
+                              {...provided.dragHandleProps}
+                            >
+                              <IconGripVertical size={14} />
+                            </ActionIcon>
+                            <TextInput
+                              value={subtask.title}
+                              onChange={e =>
+                                handleUpdateSubtaskTitle(
+                                  index,
+                                  e.currentTarget.value
+                                )
+                              }
+                              placeholder="Subtask title"
+                              style={{ flex: 1 }}
+                            />
+                            <ActionIcon
+                              variant="subtle"
+                              color="red"
+                              onClick={() => handleRemoveSubtask(index)}
+                              size="sm"
+                            >
+                              <IconTrash size={14} />
+                            </ActionIcon>
+                          </Group>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </Stack>
+                )}
+              </Droppable>
+            </DragDropContext>
+          )}
+
+          {/* Add Subtask Input */}
+          <Group gap="xs" wrap="nowrap">
+            {/* Empty space to align with grip icons above */}
+            <ActionIcon
+              variant="transparent"
+              size="sm"
+              style={{ visibility: 'hidden', pointerEvents: 'none' }}
+            >
+              <IconGripVertical size={14} />
+            </ActionIcon>
+            <TextInput
+              value={newSubtaskTitle}
+              onChange={e => setNewSubtaskTitle(e.currentTarget.value)}
+              placeholder="Add a subtask..."
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddSubtask();
+                }
+              }}
+              style={{ flex: 1 }}
+            />
+            <ActionIcon
+              onClick={handleAddSubtask}
+              variant="light"
+              color="blue"
+              size="lg"
+            >
+              <IconPlus size={18} />
+            </ActionIcon>
           </Group>
 
           <TagsInput
