@@ -2,6 +2,7 @@ import type {
   CreateTaskInput,
   Goal,
   Quadrant,
+  Subtask,
   Task,
   TaskPriority,
   UpdateTaskInput,
@@ -11,6 +12,22 @@ import { apiClient } from './api';
 // Transform API response to match frontend Task interface
 // Note: Server uses camelCase for all fields
 function transformTask(apiTask: Record<string, unknown>): Task {
+  // Transform subtasks array if present
+  const subtasks = Array.isArray(apiTask.subtasks)
+    ? (apiTask.subtasks as Record<string, unknown>[]).map(
+        st =>
+          ({
+            id: st.id as string,
+            taskId: st.taskId as string,
+            title: st.title as string,
+            completed: (st.completed as boolean) || false,
+            position: (st.position as number) || 0,
+            createdAt: st.createdAt as string,
+            updatedAt: st.updatedAt as string,
+          }) as Subtask
+      )
+    : [];
+
   return {
     id: apiTask.id as string,
     userId: apiTask.userId as string,
@@ -30,6 +47,7 @@ function transformTask(apiTask: Record<string, unknown>): Task {
     completedAt: apiTask.completedAt as string | undefined,
     createdAt: apiTask.createdAt as string,
     updatedAt: apiTask.updatedAt as string,
+    subtasks,
     goal: apiTask.goal as Goal | undefined,
   };
 }
@@ -201,6 +219,17 @@ export class TasksApiService {
     return {
       task: transformTask(response),
     };
+  }
+
+  // Toggle subtask completion status
+  static async toggleSubtaskCompletion(
+    taskId: string,
+    subtaskId: string
+  ): Promise<Record<string, unknown>> {
+    return apiClient.patch<Record<string, unknown>>(
+      `/tasks/${taskId}/subtasks/${subtaskId}/toggle`,
+      {}
+    );
   }
 
   // Move a task to a different quadrant/position

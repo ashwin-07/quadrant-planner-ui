@@ -12,6 +12,7 @@ interface QuadrantZoneProps {
   tasks: Task[];
   onAddTask: (quadrant: QuadrantType) => void;
   onToggleComplete: (taskId: string) => void;
+  onToggleSubtask?: (taskId: string, subtaskId: string) => void;
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
   color: string;
@@ -33,6 +34,7 @@ export function QuadrantZone({
   tasks,
   onAddTask,
   onToggleComplete,
+  onToggleSubtask,
   onEditTask,
   onDeleteTask,
   color,
@@ -124,6 +126,7 @@ export function QuadrantZone({
                         {...provided.dragHandleProps}
                         task={task}
                         onToggleComplete={onToggleComplete}
+                        onToggleSubtask={onToggleSubtask}
                         onEdit={onEditTask}
                         onDelete={onDeleteTask}
                         isDragging={snapshot.isDragging}

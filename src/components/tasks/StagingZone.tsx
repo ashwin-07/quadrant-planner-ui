@@ -17,6 +17,7 @@ interface StagingZoneProps {
   tasks: Task[];
   onAddTask: () => void;
   onToggleComplete: (taskId: string) => void;
+  onToggleSubtask?: (taskId: string, subtaskId: string) => void;
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
 }
@@ -25,6 +26,7 @@ export function StagingZone({
   tasks,
   onAddTask,
   onToggleComplete,
+  onToggleSubtask,
   onEditTask,
   onDeleteTask,
 }: StagingZoneProps) {
@@ -166,6 +168,7 @@ export function StagingZone({
                           <TaskCard
                             task={task}
                             onToggleComplete={onToggleComplete}
+                            onToggleSubtask={onToggleSubtask}
                             onEdit={onEditTask}
                             onDelete={onDeleteTask}
                             isDragging={snapshot.isDragging}
