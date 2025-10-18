@@ -106,14 +106,16 @@ export function deepEqual(a: unknown, b: unknown): boolean {
     return false;
   }
 
-  if (a.prototype !== b.prototype) return false;
+  if (Object.getPrototypeOf(a) !== Object.getPrototypeOf(b)) return false;
 
   const keys = Object.keys(a);
   if (keys.length !== Object.keys(b).length) {
     return false;
   }
 
-  return keys.every(k => deepEqual(a[k], b[k]));
+  return keys.every(k =>
+    deepEqual(a[k] as Record<string, unknown>, b[k] as Record<string, unknown>)
+  );
 }
 
 export function omit<T extends object, K extends keyof T>(

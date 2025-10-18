@@ -1,34 +1,36 @@
 import type {
   CreateTaskInput,
+  Goal,
+  Quadrant,
   Task,
   TaskPriority,
-  TaskQuadrant,
   UpdateTaskInput,
 } from '@/types';
 import { apiClient } from './api';
 
 // Transform API response to match frontend Task interface
+// Note: Server uses camelCase for all fields
 function transformTask(apiTask: Record<string, unknown>): Task {
   return {
     id: apiTask.id as string,
-    userId: apiTask.user_id as string,
-    goalId: apiTask.goal_id as string | undefined,
+    userId: apiTask.userId as string,
+    goalId: apiTask.goalId as string | undefined,
     title: apiTask.title as string,
     description: apiTask.description as string,
-    quadrant: apiTask.quadrant as TaskQuadrant,
-    dueDate: apiTask.due_date as string | undefined,
-    estimatedMinutes: apiTask.estimated_minutes as number | undefined,
+    quadrant: apiTask.quadrant as Quadrant,
+    dueDate: apiTask.dueDate as string | undefined,
+    estimatedMinutes: apiTask.estimatedMinutes as number | undefined,
     priority: (apiTask.priority as TaskPriority) || 'medium',
     tags: (apiTask.tags as string[]) || [],
     completed: (apiTask.completed as boolean) || false,
-    isStaged: (apiTask.is_staged as boolean) || false,
+    isStaged: (apiTask.isStaged as boolean) ?? false,
     position: (apiTask.position as number) || 0,
-    stagedAt: apiTask.staged_at as string | undefined,
-    organizedAt: apiTask.organized_at as string | undefined,
-    completedAt: apiTask.completed_at as string | undefined,
-    createdAt: apiTask.created_at as string,
-    updatedAt: apiTask.updated_at as string,
-    goal: apiTask.goal as unknown,
+    stagedAt: apiTask.stagedAt as string | undefined,
+    organizedAt: apiTask.organizedAt as string | undefined,
+    completedAt: apiTask.completedAt as string | undefined,
+    createdAt: apiTask.createdAt as string,
+    updatedAt: apiTask.updatedAt as string,
+    goal: apiTask.goal as Goal | undefined,
   };
 }
 

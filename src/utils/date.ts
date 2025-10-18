@@ -124,7 +124,13 @@ export function getDueDateStatus(dueDate?: string | Date): {
     return {
       status: 'due-soon',
       color: 'yellow',
-      text: `Due in ${daysUntil} day${daysUntil === 1 ? '' : 's'}`,
+      text: `${daysUntil} day${daysUntil === 1 ? '' : 's'}`,
+    };
+  } else if (daysUntil <= 30) {
+    return {
+      status: 'upcoming',
+      color: 'blue',
+      text: `${daysUntil} days`,
     };
   } else {
     return {

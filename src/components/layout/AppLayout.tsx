@@ -18,7 +18,7 @@ export function AppLayout({
   onThemeToggle,
   isDarkMode,
 }: AppLayoutProps) {
-  const [navbarCollapsed, setNavbarCollapsed] = useState(false);
+  const [navbarCollapsed, setNavbarCollapsed] = useState(true);
 
   return (
     <AppShell

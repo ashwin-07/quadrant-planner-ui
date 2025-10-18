@@ -147,11 +147,15 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
                 <Group gap={4}>
                   <IconCalendar
                     size={12}
-                    color={`var(--mantine-color-${dueDateStatus.color}-6)`}
+                    style={{
+                      color: `var(--mantine-color-${dueDateStatus.color}-6)`,
+                    }}
                   />
                   <Text
                     size="xs"
-                    c={dueDateStatus.color}
+                    style={{
+                      color: `var(--mantine-color-${dueDateStatus.color}-6)`,
+                    }}
                     fw={dueDateStatus.status === 'overdue' ? 600 : 400}
                   >
                     {dueDateStatus.text}

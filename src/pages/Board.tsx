@@ -7,8 +7,10 @@ import type { DropResult } from '@hello-pangea/dnd';
 import { DragDropContext } from '@hello-pangea/dnd';
 import {
   ActionIcon,
+  Box,
   Container,
   Grid,
+  Group,
   Loader,
   Menu,
   Stack,
@@ -17,15 +19,13 @@ import {
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
+  IconAdjustments,
   IconAlertTriangle,
   IconBolt,
   IconClock,
-  IconDotsVertical,
-  IconEye,
-  IconEyeOff,
   IconTrash,
 } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export function Board() {
   const {
@@ -44,25 +44,77 @@ export function Board() {
   const [selectedQuadrant, setSelectedQuadrant] =
     useState<QuadrantType>('staging');
   const [editingTask, setEditingTask] = useState<Task | undefined>();
-  const [showStagingZone, setShowStagingZone] = useState(true);
-  const [showCompletedTasks, setShowCompletedTasks] = useState(true);
 
-  // Group tasks by quadrant
+  // Load preferences from localStorage
+  const [showStagingZone, setShowStagingZone] = useState(() => {
+    const saved = localStorage.getItem('showStagingZone');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  const [showCompletedTasks, setShowCompletedTasks] = useState(() => {
+    const saved = localStorage.getItem('showCompletedTasks');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  // Task positions stored in localStorage for client-side ordering
+  const [taskPositions, setTaskPositions] = useState<Record<string, number>>(
+    () => {
+      const saved = localStorage.getItem('taskPositions');
+      return saved !== null ? JSON.parse(saved) : {};
+    }
+  );
+
+  // Save preferences to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('showStagingZone', JSON.stringify(showStagingZone));
+  }, [showStagingZone]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      'showCompletedTasks',
+      JSON.stringify(showCompletedTasks)
+    );
+  }, [showCompletedTasks]);
+
+  // Save task positions to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('taskPositions', JSON.stringify(taskPositions));
+  }, [taskPositions]);
+
+  // Helper function to sort tasks by position (localStorage or backend)
+  const sortTasksByPosition = (tasks: Task[]) => {
+    return tasks.sort((a, b) => {
+      // Use localStorage position if available, otherwise fall back to backend position
+      const posA = taskPositions[a.id] ?? a.position;
+      const posB = taskPositions[b.id] ?? b.position;
+      return posA - posB;
+    });
+  };
+
+  // Group tasks by quadrant and sort by position
   const tasksByQuadrant = {
-    staging: getStagingTasks().filter(
-      task => showCompletedTasks || !task.completed
+    staging: sortTasksByPosition(
+      getStagingTasks().filter(task => showCompletedTasks || !task.completed)
     ),
-    Q1: getTasksByQuadrant('Q1').filter(
-      task => showCompletedTasks || !task.completed
+    Q1: sortTasksByPosition(
+      getTasksByQuadrant('Q1').filter(
+        task => showCompletedTasks || !task.completed
+      )
     ),
-    Q2: getTasksByQuadrant('Q2').filter(
-      task => showCompletedTasks || !task.completed
+    Q2: sortTasksByPosition(
+      getTasksByQuadrant('Q2').filter(
+        task => showCompletedTasks || !task.completed
+      )
     ),
-    Q3: getTasksByQuadrant('Q3').filter(
-      task => showCompletedTasks || !task.completed
+    Q3: sortTasksByPosition(
+      getTasksByQuadrant('Q3').filter(
+        task => showCompletedTasks || !task.completed
+      )
     ),
-    Q4: getTasksByQuadrant('Q4').filter(
-      task => showCompletedTasks || !task.completed
+    Q4: sortTasksByPosition(
+      getTasksByQuadrant('Q4').filter(
+        task => showCompletedTasks || !task.completed
+      )
     ),
   };
 
@@ -73,6 +125,53 @@ export function Board() {
     const newQuadrant = destination.droppableId as QuadrantType;
     const isMovingToStaging = newQuadrant === 'staging';
     const isMovingFromStaging = source.droppableId === 'staging';
+
+    // Update localStorage positions optimistically with 0-based indexing
+    const sourceQuadrant = source.droppableId as QuadrantType;
+    const tasksInSource =
+      sourceQuadrant === 'staging'
+        ? tasksByQuadrant.staging
+        : tasksByQuadrant[sourceQuadrant as 'Q1' | 'Q2' | 'Q3' | 'Q4'];
+
+    const tasksInDestination =
+      newQuadrant === 'staging'
+        ? tasksByQuadrant.staging
+        : tasksByQuadrant[newQuadrant as 'Q1' | 'Q2' | 'Q3' | 'Q4'];
+
+    const updatedPositions = { ...taskPositions };
+
+    // If moving within the same quadrant, reorder tasks
+    if (source.droppableId === destination.droppableId) {
+      const reorderedTasks = Array.from(tasksInSource);
+      const [movedTask] = reorderedTasks.splice(source.index, 1);
+      reorderedTasks.splice(destination.index, 0, movedTask);
+
+      // Update positions for all tasks in this quadrant (0-based)
+      reorderedTasks.forEach((task, index) => {
+        updatedPositions[task.id] = index;
+      });
+    } else {
+      // Moving between different quadrants
+      // Update source quadrant positions (0-based)
+      tasksInSource
+        .filter(task => task.id !== draggableId)
+        .forEach((task, index) => {
+          updatedPositions[task.id] = index;
+        });
+
+      // Update destination quadrant positions (0-based)
+      const destTasks = [...tasksInDestination];
+      destTasks.splice(
+        destination.index,
+        0,
+        tasksInSource.find(t => t.id === draggableId)!
+      );
+      destTasks.forEach((task, index) => {
+        updatedPositions[task.id] = index;
+      });
+    }
+
+    setTaskPositions(updatedPositions);
 
     try {
       if (source.droppableId === destination.droppableId) {
@@ -177,69 +276,56 @@ export function Board() {
   }
 
   return (
-    <Container size="xl" py="md">
-      <Stack gap="xl">
-        {/* View Controls Menu */}
-        <Menu shadow="md" width={250} position="bottom-start">
-          <Menu.Target>
-            <ActionIcon
-              variant="subtle"
-              size="lg"
-              aria-label="View options"
-              style={{ alignSelf: 'flex-start' }}
-            >
-              <IconDotsVertical size={20} />
-            </ActionIcon>
-          </Menu.Target>
+    <Container size="xl" py="md" style={{ position: 'relative' }}>
+      {/* Floating View Controls Menu */}
+      <Menu shadow="md" width={250} position="bottom-end">
+        <Menu.Target>
+          <ActionIcon
+            variant="filled"
+            size="lg"
+            color="gray"
+            aria-label="View options"
+            style={{
+              position: 'absolute',
+              top: '1rem',
+              right: '1rem',
+              zIndex: 100,
+            }}
+          >
+            <IconAdjustments size={18} />
+          </ActionIcon>
+        </Menu.Target>
 
-          <Menu.Dropdown>
-            <Menu.Label>View Options</Menu.Label>
-            <Menu.Item
-              closeMenuOnClick={false}
-              leftSection={
-                showStagingZone ? (
-                  <IconEye size={16} />
-                ) : (
-                  <IconEyeOff size={16} />
-                )
-              }
-            >
-              <Switch
-                label="Show Staging Zone"
-                checked={showStagingZone}
-                onChange={event =>
-                  setShowStagingZone(event.currentTarget.checked)
-                }
-                styles={{
-                  root: { width: '100%' },
-                  body: { width: '100%', justifyContent: 'space-between' },
-                }}
-              />
-            </Menu.Item>
-            <Menu.Item
-              closeMenuOnClick={false}
-              leftSection={
-                showCompletedTasks ? (
-                  <IconEye size={16} />
-                ) : (
-                  <IconEyeOff size={16} />
-                )
-              }
-            >
-              <Switch
-                label="Show Completed Tasks"
-                checked={showCompletedTasks}
-                onChange={event =>
-                  setShowCompletedTasks(event.currentTarget.checked)
-                }
-                styles={{
-                  root: { width: '100%' },
-                  body: { width: '100%', justifyContent: 'space-between' },
-                }}
-              />
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
+        <Menu.Dropdown>
+          <Menu.Label>View Options</Menu.Label>
+          <Box p="xs">
+            <Stack gap="sm">
+              <Group justify="space-between" wrap="nowrap">
+                <Text size="sm">Show Staging Zone</Text>
+                <Switch
+                  checked={showStagingZone}
+                  onChange={event =>
+                    setShowStagingZone(event.currentTarget.checked)
+                  }
+                />
+              </Group>
+              <Group justify="space-between" wrap="nowrap">
+                <Text size="sm">Show Completed Tasks</Text>
+                <Switch
+                  checked={showCompletedTasks}
+                  onChange={event =>
+                    setShowCompletedTasks(event.currentTarget.checked)
+                  }
+                />
+              </Group>
+            </Stack>
+          </Box>
+        </Menu.Dropdown>
+      </Menu>
+
+      <Stack gap="xl">
+        {/* Empty spacer for floating menu button */}
+        <Box style={{ height: '8px' }} />
 
         <DragDropContext onDragEnd={handleDragEnd}>
           {/* Staging Zone */}

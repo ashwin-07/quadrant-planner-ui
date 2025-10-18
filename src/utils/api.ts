@@ -358,7 +358,7 @@ export async function getCached<T>(
   const data = await get<T>(endpoint, requiresAuth);
   cache.set(cacheKey, { data, timestamp: Date.now(), ttl: ttlMs });
 
-  return data;
+  return data as T;
 }
 
 export function clearCache(pattern?: string): void {

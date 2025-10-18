@@ -2,23 +2,25 @@ import type {
   CreateGoalInput,
   Goal,
   GoalCategory,
+  GoalTimeframe,
   UpdateGoalInput,
 } from '@/types';
 import { apiClient } from './api';
 
 // Transform API response to match frontend Goal interface
+// Note: Server uses camelCase for all fields
 function transformGoal(apiGoal: Record<string, unknown>): Goal {
   return {
     id: apiGoal.id as string,
-    userId: apiGoal.user_id as string,
+    userId: apiGoal.userId as string,
     title: apiGoal.title as string,
     description: apiGoal.description as string,
     category: apiGoal.category as GoalCategory,
-    timeframe: apiGoal.timeframe as string,
+    timeframe: apiGoal.timeframe as GoalTimeframe,
     color: (apiGoal.color as string) || '',
     archived: (apiGoal.archived as boolean) || false,
-    createdAt: apiGoal.created_at as string,
-    updatedAt: apiGoal.updated_at as string,
+    createdAt: apiGoal.createdAt as string,
+    updatedAt: apiGoal.updatedAt as string,
   };
 }
 

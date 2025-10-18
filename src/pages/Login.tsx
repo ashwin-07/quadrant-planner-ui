@@ -236,11 +236,6 @@ export function Login() {
     }
   };
 
-  const handleGoogleError = (error: string) => {
-    console.error('Google sign-in error:', error);
-    setIsSigningIn(false);
-  };
-
   const handleGuestLogin = async () => {
     setIsSigningIn(true);
     try {
@@ -328,10 +323,16 @@ export function Login() {
           <Stack gap="xl">
             {/* Welcome Message */}
             <Box>
-              <Title order={1} size="h2" fw={700} c="dark" mb="xs">
+              <Title
+                order={1}
+                size="h2"
+                fw={700}
+                style={{ color: 'var(--mantine-color-dark-9)' }}
+                mb="xs"
+              >
                 Welcome to Quadrant Planner!
               </Title>
-              <Text size="md" c="dark.6">
+              <Text size="md" style={{ color: 'var(--mantine-color-dark-6)' }}>
                 Sign in or sign up to organize your tasks and conquer your
                 priorities.
               </Text>
@@ -342,7 +343,6 @@ export function Login() {
               {/* Google Sign-In Button */}
               <GoogleSignInButton
                 onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
                 loading={isSigningIn}
               />
             </Stack>
@@ -350,7 +350,11 @@ export function Login() {
             {/* Divider */}
             <Group>
               <Divider style={{ flex: 1 }} />
-              <Text size="sm" c="dimmed" px="md">
+              <Text
+                size="sm"
+                style={{ color: 'var(--mantine-color-gray-6)' }}
+                px="md"
+              >
                 OR
               </Text>
               <Divider style={{ flex: 1 }} />
@@ -375,7 +379,12 @@ export function Login() {
             </Button>
 
             {/* Sign Up Prompt */}
-            <Text size="sm" c="dimmed" ta="center" mt="md">
+            <Text
+              size="sm"
+              style={{ color: 'var(--mantine-color-gray-6)' }}
+              ta="center"
+              mt="md"
+            >
               New to Quadrant Planner? Sign in with Google or continue as a
               guest to get started.
             </Text>

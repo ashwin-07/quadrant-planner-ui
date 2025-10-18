@@ -82,12 +82,27 @@ export function TaskForm({
   // Update form values when task changes (for editing)
   useEffect(() => {
     if (opened && task) {
+      // Parse the date string to a Date object for the DateInput component
+      let parsedDate: Date | undefined = undefined;
+      if (task.dueDate) {
+        try {
+          parsedDate = new Date(task.dueDate);
+          // Check if date is valid
+          if (isNaN(parsedDate.getTime())) {
+            parsedDate = undefined;
+          }
+        } catch (e) {
+          console.error('Error parsing due date:', e);
+          parsedDate = undefined;
+        }
+      }
+
       form.setValues({
         title: task.title || '',
         description: task.description || '',
         quadrant: task.quadrant || defaultQuadrant,
         priority: task.priority || 'medium',
-        dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+        dueDate: parsedDate,
         estimatedMinutes: task.estimatedMinutes || undefined,
         tags: task.tags || [],
         goalId: task.goalId || undefined,
