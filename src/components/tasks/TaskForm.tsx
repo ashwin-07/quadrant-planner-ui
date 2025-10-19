@@ -12,6 +12,7 @@ import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import {
   ActionIcon,
   Button,
+  Checkbox,
   Divider,
   Group,
   Select,
@@ -158,8 +159,9 @@ export function TaskForm({
   // Subtask handlers
   const handleAddSubtask = () => {
     if (newSubtaskTitle.trim()) {
-      const newSubtask: SubtaskCreate = {
+      const newSubtask: SubtaskCreate & { completed?: boolean } = {
         title: newSubtaskTitle.trim(),
+        completed: false,
       };
       setSubtasks([...subtasks, newSubtask]);
       setNewSubtaskTitle('');
@@ -175,6 +177,15 @@ export function TaskForm({
     updated[index] = {
       ...updated[index],
       title,
+    };
+    setSubtasks(updated);
+  };
+
+  const handleToggleSubtaskCompletion = (index: number) => {
+    const updated = [...subtasks];
+    updated[index] = {
+      ...updated[index],
+      completed: !(updated[index].completed ?? false),
     };
     setSubtasks(updated);
   };
@@ -204,7 +215,13 @@ export function TaskForm({
       estimatedMinutes: values.estimatedMinutes,
       tags: values.tags,
       goalId: values.goalId,
-      subtasks: subtasks.length > 0 ? subtasks : undefined,
+      subtasks:
+        subtasks.length > 0
+          ? subtasks.map(st => ({
+              ...st,
+              completed: st.completed ?? false,
+            }))
+          : undefined,
     };
     onSubmit(taskData);
     // Note: Don't close modal or reset form here - parent will handle it after API success
@@ -322,6 +339,13 @@ export function TaskForm({
                             >
                               <IconGripVertical size={14} />
                             </ActionIcon>
+                            <Checkbox
+                              size="sm"
+                              checked={subtask.completed ?? false}
+                              onChange={() =>
+                                handleToggleSubtaskCompletion(index)
+                              }
+                            />
                             <TextInput
                               value={subtask.title}
                               onChange={e =>
@@ -331,7 +355,17 @@ export function TaskForm({
                                 )
                               }
                               placeholder="Subtask title"
-                              style={{ flex: 1 }}
+                              style={{
+                                flex: 1,
+                                textDecoration:
+                                  (subtask.completed ?? false)
+                                    ? 'line-through'
+                                    : 'none',
+                                color:
+                                  (subtask.completed ?? false)
+                                    ? 'var(--mantine-color-gray-5)'
+                                    : 'var(--mantine-color-gray-7)',
+                              }}
                             />
                             <ActionIcon
                               variant="subtle"

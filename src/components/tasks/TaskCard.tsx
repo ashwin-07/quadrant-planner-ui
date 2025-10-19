@@ -11,7 +11,10 @@ import {
   Text,
 } from '@mantine/core';
 import {
+  IconAlertCircle,
+  IconArrowUp,
   IconCalendar,
+  IconCircle,
   IconDots,
   IconEdit,
   IconGripVertical,
@@ -19,6 +22,42 @@ import {
 } from '@tabler/icons-react';
 import Linkify from 'linkify-react';
 import { forwardRef } from 'react';
+
+// Priority indicator helper
+const getPriorityConfig = (priority: string) => {
+  switch (priority) {
+    case 'urgent':
+      return {
+        color: 'red',
+        icon: IconAlertCircle,
+        label: 'Urgent',
+      };
+    case 'high':
+      return {
+        color: 'orange',
+        icon: IconArrowUp,
+        label: 'High',
+      };
+    case 'medium':
+      return {
+        color: 'yellow',
+        icon: IconCircle,
+        label: 'Medium',
+      };
+    case 'low':
+      return {
+        color: 'blue',
+        icon: IconCircle,
+        label: 'Low',
+      };
+    default:
+      return {
+        color: 'gray',
+        icon: IconCircle,
+        label: 'Medium',
+      };
+  }
+};
 
 interface TaskCardProps {
   task: Task;
@@ -50,6 +89,8 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
     const dueDateStatus = task.dueDate ? getDueDateStatus(task.dueDate) : null;
     const completedSubtasks = task.subtasks.filter(st => st.completed).length;
     const totalSubtasks = task.subtasks.length;
+    const priorityConfig = getPriorityConfig(task.priority);
+    const PriorityIcon = priorityConfig.icon;
 
     return (
       <Card
@@ -76,13 +117,19 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
         {...props}
       >
         <Stack gap="xs">
-          {/* Header with checkbox and menu */}
-          <Group justify="space-between" align="flex-start">
-            <Group gap="xs" style={{ flex: 1 }}>
+          {/* Header with checkbox, title, priority, and menu */}
+          <Group justify="space-between" align="flex-start" wrap="nowrap">
+            <Group
+              gap="xs"
+              style={{ flex: 1, minWidth: 0 }}
+              wrap="nowrap"
+              align="flex-start"
+            >
               <Checkbox
                 checked={task.completed}
                 onChange={() => onToggleComplete(task.id)}
                 size="sm"
+                style={{ marginTop: '2px' }}
               />
               <Text
                 size="sm"
@@ -100,7 +147,17 @@ export const TaskCard = forwardRef<HTMLDivElement, TaskCardProps>(
               </Text>
             </Group>
 
-            <Group gap={4}>
+            <Group gap={4} wrap="nowrap">
+              {/* Priority Indicator */}
+              <Badge
+                size="xs"
+                variant="light"
+                color={priorityConfig.color}
+                leftSection={<PriorityIcon size={10} />}
+              >
+                {priorityConfig.label}
+              </Badge>
+
               <ActionIcon variant="subtle" size="sm" color="gray">
                 <IconGripVertical size={12} />
               </ActionIcon>

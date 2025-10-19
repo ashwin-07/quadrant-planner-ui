@@ -1,5 +1,6 @@
 import type { User } from '@/types';
 import { createMockUser } from '@/utils/mockData';
+import { notifications } from '@mantine/notifications';
 import {
   createContext,
   type ReactNode,
@@ -32,6 +33,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Helper function to check if JWT token is expired
+  const isTokenExpired = (token: string): boolean => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const now = Date.now() / 1000;
+      return payload.exp < now;
+    } catch (error) {
+      console.error('Error parsing JWT token:', error);
+      return true; // Treat invalid tokens as expired
+    }
+  };
+
   useEffect(() => {
     // Simulate checking for existing session
     const initAuth = async () => {
@@ -51,6 +64,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
             'Loading JWT token from localStorage:',
             savedToken.substring(0, 20) + '...'
           );
+
+          // Check if token is expired
+          if (isTokenExpired(savedToken)) {
+            console.log('JWT token has expired, logging out...');
+            notifications.show({
+              title: 'Session Expired',
+              message: 'Your session has expired. Please sign in again.',
+              color: 'orange',
+            });
+            logout();
+            return;
+          }
+
           setToken(savedToken);
         }
         // No auto-login - user must sign in
@@ -63,6 +89,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     initAuth();
   }, []);
+
+  // Periodic token expiry check
+  useEffect(() => {
+    if (!token) return;
+
+    const checkTokenExpiry = () => {
+      if (token && isTokenExpired(token)) {
+        console.log('Token expired during session, logging out...');
+        notifications.show({
+          title: 'Session Expired',
+          message: 'Your session has expired. Please sign in again.',
+          color: 'orange',
+        });
+        logout();
+      }
+    };
+
+    // Check every 5 minutes
+    const interval = setInterval(checkTokenExpiry, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [token]);
 
   const login = async (
     email: string,
