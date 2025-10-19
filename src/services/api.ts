@@ -67,6 +67,17 @@ class ApiClient {
       console.log(`API response status: ${response.status}`, response);
 
       if (!response.ok) {
+        // Handle 401 Unauthorized - token expired
+        if (response.status === 401) {
+          console.log('Received 401 Unauthorized - token may be expired');
+          // Clear auth data and redirect to login
+          localStorage.removeItem('user');
+          localStorage.removeItem('jwt_token');
+          // Trigger a page reload to redirect to login
+          window.location.href = '/login';
+          throw new Error('Session expired. Please sign in again.');
+        }
+
         let errorMessage = `HTTP ${response.status}`;
         try {
           const errorData = await response.json();
